@@ -1,0 +1,36 @@
+<div id="authContainer" class="auth-container">
+    <div class="auth-card">
+        <div class="auth-logo">
+            <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-cyan); margin: 0 auto 12px; display: block;">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+            <h2 id="authTitle">Command Center Portal</h2>
+            <p id="authSubtitle">Sign in to access National Smart City OS</p>
+        </div>
+
+        <!-- Role Selection -->
+        <div class="auth-role-tabs">
+            <button class="role-tab active" type="button" id="tabOperator" onclick="setAuthRole('operator')">Operator</button>
+            <button class="role-tab" type="button" id="tabCitizen" onclick="setAuthRole('citizen')">Citizen</button>
+        </div>
+
+        <form id="authForm" class="auth-form" onsubmit="handleAuthSubmit(event)">
+            <div class="form-group" id="nameGroup" style="display: none;">
+                <label>Full Name</label>
+                <input type="text" id="authName" class="auth-input" placeholder="e.g. Ishaan Thusoo">
+            </div>
+            <div class="form-group">
+                <label id="emailLabel">Official Email</label>
+                <input type="email" id="authEmail" class="auth-input" placeholder="operator@smartcity.gov.in" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="authPassword" class="auth-input" placeholder="••••••••••••" required>
+            </div>
+            <button type="submit" id="authSubmitBtn" class="auth-btn">Sign In</button>
+        </form>
+        <div class="auth-switch">
+            <span id="authSwitchText">Need an account?</span> <a onclick="toggleAuthMode()" id="authSwitchLink">Register here</a>
+        </div>
+    </div>
+</div>
