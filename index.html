@@ -82,7 +82,7 @@ h2.dayh{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:1.6rem 0 .6rem;c
 @media(max-width:520px){.row{grid-template-columns:1fr;gap:.2rem}.row time{text-align:left;padding:0}}
 @media(prefers-reduced-motion:reduce){.orb,.toast{transition:none}}
 
-/* ---- attendance styles (Session-level & Subject-level) ---- */
+/* ---- attendance styles (Date-specific calendar & Subject-level) ---- */
 .att-hero{padding:min(18vh,6rem) 0 1.2rem}
 .att-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.8rem;margin:1rem 0 1.2rem}
 .att-stat{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:14px;padding:.9rem 1.1rem}
@@ -95,8 +95,16 @@ h2.dayh{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:1.6rem 0 .6rem;c
 .att-mode-btn{background:none;border:0;border-radius:99px;padding:.45rem 1.15rem;color:var(--dim);font-size:.88rem;font-weight:500;cursor:pointer;transition:all .2s}
 .att-mode-btn.active{background:var(--ink);color:#12142b;font-weight:600}
 
-.att-day-strip{display:flex;gap:.5rem;overflow-x:auto;padding:.2rem 0 1.2rem;scrollbar-width:none}
-.att-day-strip::-webkit-scrollbar{display:none}
+/* Calendar Date Selector Bar */
+.att-date-bar{display:flex;align-items:center;justify-content:space-between;gap:.8rem;background:var(--glass);border:1px solid var(--line);border-radius:16px;padding:.75rem 1.1rem;margin-bottom:1.5rem;backdrop-filter:blur(14px);flex-wrap:wrap}
+.att-date-nav{display:flex;align-items:center;gap:.6rem}
+.btn-date-step{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--ink);width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;transition:all .15s}
+.btn-date-step:hover{background:rgba(255,255,255,.15);border-color:var(--ink)}
+.att-date-display{display:flex;align-items:center;gap:.5rem;position:relative}
+.att-date-input{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+.att-date-label{font-size:1.05rem;font-weight:600;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:.4rem}
+.att-date-label:hover{color:var(--amber)}
+.att-holiday-tag{font-size:.78rem;padding:.2rem .55rem;background:rgba(255,200,87,.15);color:var(--amber);border:1px solid rgba(255,200,87,.3);border-radius:6px}
 
 .att-card{display:flex;justify-content:space-between;align-items:center;gap:1.25rem;flex-wrap:wrap;padding:1.15rem 1.3rem;position:relative;margin-bottom:1rem;background:var(--glass);border:1px solid var(--line);border-radius:16px;backdrop-filter:blur(14px);transition:border-color .2s,box-shadow .2s}
 .att-card.marked-p{border-color:rgba(74,222,128,.4);box-shadow:0 0 20px -6px rgba(74,222,128,.15)}
@@ -158,6 +166,7 @@ h2.dayh{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:1.6rem 0 .6rem;c
   .att-actions{justify-content:space-between;width:100%;margin-top:.5rem;padding-top:.7rem;border-top:1px solid var(--line)}
   .btn-att{flex:1;justify-content:center}
 }
+
 </style>
 </head>
 <body>
@@ -184,7 +193,7 @@ h2.dayh{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:1.6rem 0 .6rem;c
       <div class="strip" id="strip" role="group" aria-label="Pick a day"></div>
       <div id="tl"></div>
     </section>
-    <section id="v-att" hidden>
+        <section id="v-att" hidden>
       <div class="att-hero">
         <div class="when" style="color:var(--dim)">Timetable Attendance & 75% Goal Tracker</div>
         <h1 class="big">Attendance</h1>
@@ -192,15 +201,31 @@ h2.dayh{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:1.6rem 0 .6rem;c
         
         <div class="att-summary" id="att-summary"></div>
 
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:.5rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:1rem">
           <div class="att-mode-toggle" id="att-mode-toggle" role="tablist">
-            <button class="att-mode-btn active" data-mode="day" role="tab">📅 By Day</button>
+            <button class="att-mode-btn active" data-mode="day" role="tab">📅 By Day & Date</button>
             <button class="att-mode-btn" data-mode="subject" role="tab">📚 By Subject</button>
           </div>
           <span style="font-size:.82rem;color:var(--dim)">Instant calculation for 75% target</span>
         </div>
 
-        <div class="att-day-strip" id="att-day-strip" role="group" aria-label="Select day for attendance"></div>
+        <!-- Date Navigator Bar for By Day Mode -->
+        <div class="att-date-bar" id="att-date-bar">
+          <div class="att-date-nav">
+            <button class="btn-date-step" id="att-prev-day" title="Previous Day">‹</button>
+            <div class="att-date-display">
+              <input type="date" id="att-date-picker" class="att-date-input">
+              <span class="att-date-label" id="att-date-label" title="Click to pick calendar date">
+                📅 <span id="att-date-text">Loading date...</span>
+              </span>
+            </div>
+            <button class="btn-date-step" id="att-next-day" title="Next Day">›</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:.5rem">
+            <span id="att-day-holiday-info"></span>
+            <button class="chip today" id="att-jump-today">Today</button>
+          </div>
+        </div>
       </div>
 
       <div id="att-content-view"></div>
@@ -259,9 +284,7 @@ const HOL=[["2026-01-26","Republic Day","N","🇮🇳"],["2026-02-15","Mahashivr
 .map(h=>({date:new Date(h[0]+"T00:00:00"),name:h[1],type:HT[h[2]],em:h[3]}));
 const DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const $=id=>document.getElementById(id);
-
-/* ---- Global State Variables Declared at the Top ---- */
-let user={name:"",id:"",sec:"2"},notes={},sel=1,view="day",attendance={},sessionMarks={},attViewMode="day",attDaySel="today";
+let user={name:"",id:"",sec:"2"},notes={},sel=1,view="day",attendance={},sessionMarks={},attViewMode="day",attSelectedDate=new Date();
 
 function tm(s){const[a,b]=s.split(":");return +a*60+ +b}
 function fmt(m){let h=Math.floor(m/60);const ap=h>=12?"PM":"AM";h=h%12||12;return h+":"+String(m%60).padStart(2,"0")+" "+ap}
@@ -325,7 +348,7 @@ function bot(raw){
   if(d===0)return "Sunday has no classes. Enjoy the day off.";
   if(d>0){const l=dayList(d);return l.length?`${DAYS[d]} for IT-${user.sec}:\n`+l.map(c=>`• ${fmt(c.s)}–${fmt(c.e)}: ${c.sub} in ${c.ven}${c.prof?" ("+c.prof+")":""}`).join("\n"):`No classes on ${DAYS[d]}.`}
   if(has("holiday","holidays","break","breaks","vacation")){const t=today0(),h=HOL.find(x=>x.date>=t);if(!h)return "No more holidays are listed for 2026.";const n=Math.round((h.date-t)/864e5);return `Next up: ${h.em} ${h.name} on ${dstr(h.date)}, ${n?n+" day"+(n>1?"s":"")+" away":"today"}.`}
-  const T=[[["data structures","dsa"],DSA,J],[[&quot;digital electronics","de"],DE,M],[["automata","formal languages","flat"],FLA,P],[["probability","statistics","stats"],PS,K],[["communication","etc"],ETC,G],[["fit","foundations"],FIT,A]];
+  const T=[[["data structures","dsa"],DSA,J],[["digital electronics","de"],DE,M],[["automata","formal languages","flat"],FLA,P],[["probability","statistics","stats"],PS,K],[["communication","etc"],ETC,G],[["fit","foundations"],FIT,A]];
   const hit=T.find(t=>t[0].some(k=>k.includes(" ")?q.includes(k):has(k)));
   if(has("who","professor","teacher","teaches","faculty")){if(hit)return `${hit[1]} is taught by ${hit[2]}.`;return "Faculty:\n"+T.map(t=>`• ${t[1]}: ${t[2]}`).join("\n")}
   if(has("venue","room","where","location")){if(hit){const v=[...new Set(mine().filter(c=>c.sub.startsWith(hit[1])).map(c=>c.ven))];return `${hit[1]} meets at ${v.join(" and ")}.`}return "Most lectures are in IT-202. Labs use IT-203, IT-204 or the Comp Engg. Dept."}
@@ -380,7 +403,8 @@ $("sugg").onclick=e=>{const b=e.target.closest("button");if(b)send(b.dataset.q)}
 $("save").onclick=()=>{const v=$("nt").value.trim();if(!v){$("nerr").hidden=false;return}$("nerr").hidden=true;
   myNotes().unshift({id:Date.now(),text:v,at:new Date().toLocaleString()});store(0,"nx_notes",notes);$("nt").value="";renderNotes();toast("Note saved")};
 
-/* ---- Attendance Engine (Session-Level & Subject-Level) ---- */
+
+/* ---- Attendance Engine (Date-Specific Records & Subject Tracker) ---- */
 const defaultSubs = [
   "Data Structures and Algorithms",
   "Effective Technical Communication",
@@ -390,6 +414,13 @@ const defaultSubs = [
   "Formal Languages and Automata Theory",
   "NSS/NCC"
 ];
+
+function formatDateKey(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
 function myAtt(){
   if(!attendance[user.id]){
@@ -413,6 +444,7 @@ function mySessions(){
 function initAttendance(){
   attendance = store(1, "nx_attendance") || {};
   sessionMarks = store(1, "nx_sessions") || {};
+  attSelectedDate = new Date();
   myAtt();
 }
 
@@ -443,52 +475,54 @@ function calcTarget(a, t){
   if(t === 0) return { pct: 0, needed: 0, canBunk: 0, state: "none" };
   const pct = (a / t) * 100;
   if(pct < 75){
+    // Required to reach 75%: (a + x) / (t + x) >= 0.75 => x = 3t - 4a
     const needed = Math.max(0, 3 * t - 4 * a);
     return { pct, needed, canBunk: 0, state: "short" };
   } else {
+    // Can safely miss without dropping below 75%: y = floor((4a - 3t) / 3)
     const canBunk = Math.floor((4 * a - 3 * t) / 3);
-    return { pct, needed, canBunk, state: "safe" };
+    return { pct, needed: 0, canBunk, state: "safe" };
   }
 }
 
-function renderAttDayStrip(){
-  const stripBox = $("att-day-strip");
-  if(!stripBox) return;
+function renderDateNavigator(){
+  const dateBar = $("att-date-bar");
+  if(!dateBar) return;
 
   if(attViewMode === "subject"){
-    stripBox.style.display = "none";
+    dateBar.style.display = "none";
     return;
   }
-  stripBox.style.display = "flex";
+  dateBar.style.display = "flex";
 
-  const todayNum = new Date().getDay();
-  const options = [
-    { id: "today", label: todayNum === 0 ? "Today (Sun)" : "Today (" + DAYS[todayNum].slice(0,3) + ")" },
-    { id: 1, label: "Monday" },
-    { id: 2, label: "Tuesday" },
-    { id: 3, label: "Wednesday" },
-    { id: 4, label: "Thursday" },
-    { id: 5, label: "Friday" },
-    { id: 6, label: "Saturday" }
-  ];
+  const cur = attSelectedDate || new Date();
+  const today = new Date();
+  const isToday = cur.toDateString() === today.toDateString();
 
-  stripBox.innerHTML = options.map(opt => {
-    const isToday = opt.id === todayNum || (opt.id === "today" && todayNum !== 0);
-    const isSel = attDaySel === opt.id;
-    return `<button class="chip${isToday ? ' today' : ''}" data-attday="${opt.id}" aria-pressed="${isSel}">${opt.label}</button>`;
-  }).join("");
+  const dateText = cur.toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  }) + (isToday ? " (Today)" : "");
 
-  stripBox.onclick = e => {
-    const btn = e.target.closest("button");
-    if(!btn) return;
-    const v = btn.dataset.attday;
-    attDaySel = (v === "today") ? v : +v;
-    renderAttendance();
-  };
+  const labelEl = $("att-date-text");
+  if(labelEl) labelEl.textContent = dateText;
+
+  const inputEl = $("att-date-picker");
+  if(inputEl) inputEl.value = formatDateKey(cur);
+
+  // Check if date is a holiday
+  const curZero = new Date(cur); curZero.setHours(0,0,0,0);
+  const hol = HOL.find(h => h.date.getTime() === curZero.getTime());
+  const holSpan = $("att-day-holiday-info");
+  if(holSpan){
+    holSpan.innerHTML = hol ? `<span class="att-holiday-tag">${hol.em} ${hol.name}</span>` : "";
+  }
 }
 
 function renderAttendance(){
-  renderAttDayStrip();
+  renderDateNavigator();
   const list = myAtt();
   const summaryBox = $("att-summary");
   const viewContainer = $("att-content-view");
@@ -499,6 +533,7 @@ function renderAttendance(){
     b.classList.toggle("active", b.dataset.mode === attViewMode);
   });
 
+  // Calculate Overall Stats across all subjects
   let totAtt = 0, totHeld = 0;
   list.forEach(s => { totAtt += s.attended; totHeld += s.total; });
   const overall = calcTarget(totAtt, totHeld);
@@ -540,35 +575,53 @@ function renderAttendance(){
 
   if(attViewMode === "day"){
     if(subTools) subTools.hidden = true;
-    const activeDayNum = attDaySel === "today" ? (new Date().getDay() || 1) : attDaySel;
-    renderDayWiseView(viewContainer, activeDayNum);
+    renderDayWiseView(viewContainer);
   } else {
     if(subTools) subTools.hidden = false;
     renderSubjectWiseView(viewContainer, list);
   }
 }
 
-function renderDayWiseView(container, dayNum){
+function renderDayWiseView(container){
   container.innerHTML = "";
+  const cur = attSelectedDate || new Date();
+  const dayNum = cur.getDay();
   const dayName = DAYS[dayNum];
+  const dateKey = formatDateKey(cur);
   const classesToday = dayList(dayNum);
   const sm = mySessions();
+
+  const curZero = new Date(cur); curZero.setHours(0,0,0,0);
+  const hol = HOL.find(h => h.date.getTime() === curZero.getTime());
 
   const headerDiv = document.createElement("div");
   headerDiv.style.margin = "0.2rem 0 1rem";
   headerDiv.innerHTML = `<h2 class="dayh" style="margin:0 0 .25rem">${dayName} Timetable Sessions (${classesToday.length})</h2>
-  <span style="font-size:.85rem;color:var(--dim)">Mark each class session as Present or Absent. Tap again to clear.</span>`;
+  <span style="font-size:.85rem;color:var(--dim)">Showing scheduled classes for <b>${dateKey}</b>. Mark Present or Absent below.</span>`;
   container.appendChild(headerDiv);
 
-  if(!classesToday.length){
-    container.innerHTML += `<div class="panel empty" style="text-align:center;padding:3rem 1rem">No classes scheduled on ${dayName}. Enjoy your day off!</div>`;
+  if(hol){
+    container.innerHTML += `<div class="panel" style="text-align:center;padding:2.5rem 1rem;border-color:rgba(255,200,87,.3);margin-bottom:1rem">
+      <div style="font-size:2rem;margin-bottom:.5rem">${hol.em}</div>
+      <h3 style="margin:0 0 .3rem;color:var(--amber)">University Holiday: ${hol.name}</h3>
+      <span style="color:var(--dim);font-size:.9rem">${hol.type} · No academic lectures scheduled</span>
+    </div>`;
+  }
+
+  if(dayNum === 0){
+    container.innerHTML += `<div class="panel empty" style="text-align:center;padding:3rem 1rem">Sunday is a weekend! No academic lectures scheduled.</div>`;
+    return;
+  }
+
+  if(!classesToday.length && !hol){
+    container.innerHTML += `<div class="panel empty" style="text-align:center;padding:3rem 1rem">No classes scheduled on ${dayName}.</div>`;
     return;
   }
 
   classesToday.forEach(cls => {
     const sub = getSubjectRecord(cls.sub);
-    const sessionKey = `${cls.d}_${cls.s}_${cls.sub}`;
-    const mark = sm[sessionKey];
+    const sessionKey = `${dateKey}_${cls.s}_${cls.sub}`;
+    const mark = sm[sessionKey]; // 'P', 'A', or undefined
 
     const card = document.createElement("div");
     card.className = "att-card" + (mark === "P" ? " marked-p" : mark === "A" ? " marked-a" : "");
@@ -603,8 +656,8 @@ function renderDayWiseView(container, dayNum){
     const barWidth = sub.total ? Math.min(100, Math.round(stat.pct)) : 0;
 
     let statusBadge = "";
-    if(mark === "P") statusBadge = `<span class="att-status-badge p">Marked Present</span>`;
-    else if(mark === "A") statusBadge = `<span class="att-status-badge a">Marked Absent</span>`;
+    if(mark === "P") statusBadge = `<span class="att-status-badge p">Present on ${dateKey}</span>`;
+    else if(mark === "A") statusBadge = `<span class="att-status-badge a">Absent on ${dateKey}</span>`;
 
     card.innerHTML = `
       <div class="att-info">
@@ -645,7 +698,7 @@ function renderSubjectWiseView(container, list){
   const headerDiv = document.createElement("div");
   headerDiv.style.margin = "0.2rem 0 1rem";
   headerDiv.innerHTML = `<h2 class="dayh" style="margin:0 0 .25rem">Subject Attendance Summary (${list.length} courses)</h2>
-  <span style="font-size:.85rem;color:var(--dim)">Track cumulative records, update past numbers directly (✎ Edit), or log classes.</span>`;
+  <span style="font-size:.85rem;color:var(--dim)">Track cumulative records across all calendar weeks. Edit past counts directly (✎ Edit) anytime.</span>`;
   container.appendChild(headerDiv);
 
   if(!list.length){
@@ -802,11 +855,41 @@ function handleAttAction(action, btn){
   }
 }
 
+// Global click event delegation
 document.addEventListener("click", e => {
   const modeBtn = e.target.closest(".att-mode-btn");
   if(modeBtn){
     attViewMode = modeBtn.dataset.mode;
     renderAttendance();
+    return;
+  }
+
+  // Prev / Next Day buttons
+  if(e.target.closest("#att-prev-day")){
+    attSelectedDate.setDate(attSelectedDate.getDate() - 1);
+    renderAttendance();
+    return;
+  }
+  if(e.target.closest("#att-next-day")){
+    attSelectedDate.setDate(attSelectedDate.getDate() + 1);
+    renderAttendance();
+    return;
+  }
+  if(e.target.closest("#att-jump-today")){
+    attSelectedDate = new Date();
+    renderAttendance();
+    return;
+  }
+
+  // Clicking date label triggers date input
+  const dateLabel = e.target.closest("#att-date-label");
+  if(dateLabel){
+    const inp = $("att-date-picker");
+    if(inp && typeof inp.showPicker === "function"){
+      try { inp.showPicker(); } catch(err){ inp.focus(); }
+    } else if(inp){
+      inp.focus();
+    }
     return;
   }
 
@@ -827,6 +910,19 @@ document.addEventListener("click", e => {
   }
 });
 
+// Listener for Date Picker input change
+document.addEventListener("change", e => {
+  if(e.target.id === "att-date-picker"){
+    const val = e.target.value;
+    if(val){
+      const [y, m, d] = val.split("-").map(Number);
+      attSelectedDate = new Date(y, m - 1, d);
+      renderAttendance();
+    }
+  }
+});
+
+// Listener for custom subject addition in By Subject view
 document.addEventListener("DOMContentLoaded", () => {
   const form = $("add-sub-form");
   if(form){
@@ -853,7 +949,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-/* ---- Startup Call After All Declarations ---- */
 notes=store(1,"nx_notes")||{};
 const saved=store(1,"nx_user");
 if(saved&&saved.name){user=saved;enter(true)}else{paintSky()}
