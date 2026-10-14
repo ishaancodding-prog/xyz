@@ -158,7 +158,6 @@ h2.dayh{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:1.6rem 0 .6rem;c
   .att-actions{justify-content:space-between;width:100%;margin-top:.5rem;padding-top:.7rem;border-top:1px solid var(--line)}
   .btn-att{flex:1;justify-content:center}
 }
-
 </style>
 </head>
 <body>
@@ -185,7 +184,7 @@ h2.dayh{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:1.6rem 0 .6rem;c
       <div class="strip" id="strip" role="group" aria-label="Pick a day"></div>
       <div id="tl"></div>
     </section>
-        <section id="v-att" hidden>
+    <section id="v-att" hidden>
       <div class="att-hero">
         <div class="when" style="color:var(--dim)">Timetable Attendance & 75% Goal Tracker</div>
         <h1 class="big">Attendance</h1>
@@ -386,9 +385,9 @@ setInterval(()=>{paintSky();if(!$("app").hidden&&view==="day"){hero();if(sel==="
 
 /* ---- Attendance Engine (Session-Level & Subject-Level) ---- */
 let attendance = {};
-let sessionMarks = {}; // Session status keyed by sessionKey: 'P' or 'A'
-let attViewMode = "day"; // "day" or "subject"
-let attDaySel = "today"; // "today", 1, 2, 3, 4, 5, 6
+let sessionMarks = {};
+let attViewMode = "day";
+let attDaySel = "today";
 
 const defaultSubs = [
   "Data Structures and Algorithms",
@@ -402,7 +401,6 @@ const defaultSubs = [
 
 function myAtt(){
   if(!attendance[user.id]){
-    // Seed subjects from timetable for the active section
     const secSubs = [...new Set(mine().map(c => c.sub.replace(/ \(Practical\)|\(Tutorial\/Practical\)|\(Tutorial\)/, "").trim()))];
     const initialList = secSubs.length ? secSubs : defaultSubs;
     attendance[user.id] = initialList.map(name => ({
@@ -453,11 +451,9 @@ function calcTarget(a, t){
   if(t === 0) return { pct: 0, needed: 0, canBunk: 0, state: "none" };
   const pct = (a / t) * 100;
   if(pct < 75){
-    // Required to reach 75%: (a + x) / (t + x) >= 0.75 => x = 3t - 4a
     const needed = Math.max(0, 3 * t - 4 * a);
     return { pct, needed, canBunk: 0, state: "short" };
   } else {
-    // Can safely miss without dropping below 75%: y = floor((4a - 3t) / 3)
     const canBunk = Math.floor((4 * a - 3 * t) / 3);
     return { pct, needed: 0, canBunk, state: "safe" };
   }
@@ -507,12 +503,10 @@ function renderAttendance(){
   const subTools = $("att-subject-tools");
   if(!summaryBox || !viewContainer) return;
 
-  // Update mode toggle buttons
   document.querySelectorAll(".att-mode-btn").forEach(b => {
     b.classList.toggle("active", b.dataset.mode === attViewMode);
   });
 
-  // Calculate Overall Stats across all subjects
   let totAtt = 0, totHeld = 0;
   list.forEach(s => { totAtt += s.attended; totHeld += s.total; });
   const overall = calcTarget(totAtt, totHeld);
@@ -582,7 +576,7 @@ function renderDayWiseView(container, dayNum){
   classesToday.forEach(cls => {
     const sub = getSubjectRecord(cls.sub);
     const sessionKey = `${cls.d}_${cls.s}_${cls.sub}`;
-    const mark = sm[sessionKey]; // 'P', 'A', or undefined
+    const mark = sm[sessionKey];
 
     const card = document.createElement("div");
     card.className = "att-card" + (mark === "P" ? " marked-p" : mark === "A" ? " marked-a" : "");
@@ -741,7 +735,6 @@ function handleSessionMark(sessionKey, targetMark, subId, subName){
   const currentMark = sm[sessionKey];
 
   if(currentMark === targetMark){
-    // Tapping the active button toggles it off (unmarks)
     if(targetMark === "P"){
       sub.attended = Math.max(0, sub.attended - 1);
       sub.total = Math.max(0, sub.total - 1);
@@ -751,7 +744,6 @@ function handleSessionMark(sessionKey, targetMark, subId, subName){
     delete sm[sessionKey];
     toast(`${subName}: Unmarked`);
   } else if(!currentMark){
-    // Marking for the first time
     if(targetMark === "P"){
       sub.attended += 1;
       sub.total += 1;
@@ -763,14 +755,11 @@ function handleSessionMark(sessionKey, targetMark, subId, subName){
       toast(`${subName}: Marked Absent ✕`);
     }
   } else {
-    // Switching from P to A, or A to P
     if(targetMark === "P"){
-      // was 'A', now 'P': attended goes up by 1, total stays same
       sub.attended += 1;
       sm[sessionKey] = "P";
       toast(`${subName}: Changed to Present ✓`);
     } else {
-      // was 'P', now 'A': attended goes down by 1, total stays same
       sub.attended = Math.max(0, sub.attended - 1);
       sm[sessionKey] = "A";
       toast(`${subName}: Changed to Absent ✕`);
@@ -821,7 +810,6 @@ function handleAttAction(action, btn){
   }
 }
 
-// Global click event delegation
 document.addEventListener("click", e => {
   const modeBtn = e.target.closest(".att-mode-btn");
   if(modeBtn){
@@ -847,7 +835,6 @@ document.addEventListener("click", e => {
   }
 });
 
-// Listener for custom subject addition in By Subject view
 document.addEventListener("DOMContentLoaded", () => {
   const form = $("add-sub-form");
   if(form){
@@ -873,7 +860,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 });
-
 </script>
 </body>
 </html>
