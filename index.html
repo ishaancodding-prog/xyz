@@ -82,21 +82,25 @@ h2.dayh{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:1.6rem 0 .6rem;c
 @media(max-width:520px){.row{grid-template-columns:1fr;gap:.2rem}.row time{text-align:left;padding:0}}
 @media(prefers-reduced-motion:reduce){.orb,.toast{transition:none}}
 
-/* ---- attendance styles (Day-wise) ---- */
+/* ---- attendance styles (Subject & Day-wise) ---- */
 .att-hero{padding:min(18vh,6rem) 0 1.2rem}
-.att-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.8rem;margin:1rem 0 1.5rem}
+.att-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.8rem;margin:1rem 0 1.2rem}
 .att-stat{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:14px;padding:.9rem 1.1rem}
 .att-stat small{display:block;color:var(--dim);font-size:.8rem;margin-bottom:.2rem}
 .att-stat b{font:800 1.6rem "Bricolage Grotesque",sans-serif;color:var(--ink)}
 .att-stat.good b{color:#4ade80}
 .att-stat.warn b{color:var(--bad)}
 
-.att-day-strip{display:flex;gap:.5rem;overflow-x:auto;padding:.3rem 0 1.2rem;scrollbar-width:none}
+.att-mode-toggle{display:inline-flex;gap:.35rem;background:rgba(0,0,0,.35);padding:.3rem;border-radius:99px;border:1px solid var(--line);margin-bottom:1.2rem}
+.att-mode-btn{background:none;border:0;border-radius:99px;padding:.45rem 1.1rem;color:var(--dim);font-size:.88rem;font-weight:500;cursor:pointer;transition:all .2s}
+.att-mode-btn.active{background:var(--ink);color:#12142b;font-weight:600}
+
+.att-day-strip{display:flex;gap:.5rem;overflow-x:auto;padding:.2rem 0 1.2rem;scrollbar-width:none}
 .att-day-strip::-webkit-scrollbar{display:none}
 
-.att-card{display:flex;justify-content:space-between;align-items:center;gap:1.25rem;flex-wrap:wrap;padding:1.1rem 1.3rem;position:relative;margin-bottom:1rem}
+.att-card{display:flex;justify-content:space-between;align-items:center;gap:1.25rem;flex-wrap:wrap;padding:1.15rem 1.3rem;position:relative;margin-bottom:1rem;background:var(--glass);border:1px solid var(--line);border-radius:16px;backdrop-filter:blur(14px)}
 .att-info{flex:1;min-width:240px}
-.att-meta{font-size:.82rem;color:var(--dim);margin-bottom:.25rem;display:flex;align-items:center;gap:.6rem}
+.att-meta{font-size:.82rem;color:var(--dim);margin-bottom:.25rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
 .att-meta span{color:var(--amber);font-weight:600}
 .att-name-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.35rem}
 .att-title{font-size:1.15rem;font-weight:600;color:var(--ink)}
@@ -120,14 +124,14 @@ h2.dayh{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:1.6rem 0 .6rem;c
 .att-advice.neutral{color:var(--dim)}
 
 .att-actions{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
-.btn-att{border:0;padding:.6rem 1.05rem;border-radius:12px;font-weight:600;font-size:.9rem;display:inline-flex;align-items:center;gap:.35rem;transition:transform .15s,opacity .15s}
+.btn-att{border:0;padding:.6rem 1.05rem;border-radius:12px;font-weight:600;font-size:.9rem;display:inline-flex;align-items:center;gap:.35rem;transition:transform .15s,opacity .15s;cursor:pointer}
 .btn-att:hover{transform:translateY(-1px)}
 .btn-att:active{transform:translateY(0)}
 .btn-pres{background:rgba(74,222,128,.2);color:#4ade80;border:1px solid rgba(74,222,128,.4)}
 .btn-pres:hover{background:rgba(74,222,128,.3)}
 .btn-abs{background:rgba(255,138,138,.2);color:var(--bad);border:1px solid rgba(255,138,138,.4)}
 .btn-abs:hover{background:rgba(255,138,138,.3)}
-.btn-sub-opt{background:none;border:1px solid var(--line);border-radius:8px;color:var(--dim);padding:.35rem .65rem;font-size:.8rem}
+.btn-sub-opt{background:none;border:1px solid var(--line);border-radius:8px;color:var(--dim);padding:.35rem .65rem;font-size:.8rem;cursor:pointer}
 .btn-sub-opt:hover{color:var(--ink);border-color:var(--dim)}
 .btn-sub-del{color:var(--bad);border-color:rgba(255,138,138,.3)}
 .btn-sub-del:hover{background:rgba(255,138,138,.1)}
@@ -169,20 +173,30 @@ h2.dayh{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:1.6rem 0 .6rem;c
     </section>
         <section id="v-att" hidden>
       <div class="att-hero">
-        <div class="when" style="color:var(--dim)">Day-wise Attendance & 75% Tracker</div>
+        <div class="when" style="color:var(--dim)">Curriculum Timetable & 75% Goal Tracker</div>
         <h1 class="big">Attendance</h1>
-        <p class="sub">Select any day to mark attendance for scheduled classes, or view all subjects.</p>
+        <p class="sub">Mark attendance for each subject and class session as Present or Absent. Track records by day or across subjects.</p>
         
         <div class="att-summary" id="att-summary"></div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:.5rem">
+          <div class="att-mode-toggle" id="att-mode-toggle" role="tablist">
+            <button class="att-mode-btn active" data-mode="day" role="tab">📅 By Day</button>
+            <button class="att-mode-btn" data-mode="subject" role="tab">📚 By Subject</button>
+          </div>
+          <span style="font-size:.82rem;color:var(--dim)">Auto-calculates required classes to hit 75%</span>
+        </div>
+
         <div class="att-day-strip" id="att-day-strip" role="group" aria-label="Select day for attendance"></div>
       </div>
 
-      <div id="att-day-view"></div>
+      <div id="att-content-view"></div>
 
-      <div id="att-all-tools" hidden>
+      <div id="att-subject-tools" hidden>
         <div class="panel" style="margin:1.5rem 0">
+          <label for="new-sub-name" style="display:block;color:var(--dim);font-size:.85rem;margin-bottom:.5rem">Add Additional Subject / Lab</label>
           <form class="att-add-box" id="add-sub-form">
-            <input class="in" id="new-sub-name" placeholder="Add custom subject (e.g. Web Development, Elective)..." autocomplete="off" aria-label="Subject name">
+            <input class="in" id="new-sub-name" placeholder="Subject name (e.g. Web Development, Elective Lab)..." autocomplete="off" aria-label="Subject name">
             <button class="go" type="submit">+ Add subject</button>
           </form>
         </div>
@@ -356,9 +370,10 @@ const saved=store(1,"nx_user");
 if(saved&&saved.name){user=saved;enter(true)}else{paintSky()}
 setInterval(()=>{paintSky();if(!$("app").hidden&&view==="day"){hero();if(sel==="All"||sel===new Date().getDay())timeline()}},1000);
 
-/* ---- Day-wise Attendance Logic ---- */
+/* ---- Attendance Logic (By Day & By Subject) ---- */
 let attendance = {};
-let attDaySel = "today"; // "today", 1, 2, 3, 4, 5, 6, "all"
+let attViewMode = "day"; // "day" or "subject"
+let attDaySel = "today"; // "today", 1, 2, 3, 4, 5, 6
 
 const defaultSubs = [
   "Data Structures and Algorithms",
@@ -372,14 +387,16 @@ const defaultSubs = [
 
 function myAtt(){
   if(!attendance[user.id]){
-    const list = defaultSubs.map(name => ({
+    // Seed subjects from timetable for the active section
+    const secSubs = [...new Set(mine().map(c => c.sub.replace(/ \(Practical\)|\(Tutorial\/Practical\)|\(Tutorial\)/, "").trim()))];
+    const initialList = secSubs.length ? secSubs : defaultSubs;
+    attendance[user.id] = initialList.map(name => ({
       id: "sub_" + Math.random().toString(36).substr(2, 9),
       name: name,
       attended: 0,
       total: 0,
       history: []
     }));
-    attendance[user.id] = list;
   }
   return attendance[user.id];
 }
@@ -396,7 +413,6 @@ function saveAttendance(){
 
 function getSubjectRecord(subName){
   const list = myAtt();
-  // Normalize match
   const cleanName = subName.replace(/ \(Practical\)|\(Tutorial\/Practical\)|\(Tutorial\)/, "").trim();
   let found = list.find(s => s.name.toLowerCase() === subName.toLowerCase() || s.name.toLowerCase() === cleanName.toLowerCase());
   if(!found){
@@ -417,11 +433,11 @@ function calcTarget(a, t){
   if(t === 0) return { pct: 0, needed: 0, canBunk: 0, state: "none" };
   const pct = (a / t) * 100;
   if(pct < 75){
-    // Needed to reach 75%: (a + x) / (t + x) >= 0.75 => x = 3t - 4a
+    // Required to reach 75%: (a + x) / (t + x) >= 0.75 => x = 3t - 4a
     const needed = Math.max(0, 3 * t - 4 * a);
     return { pct, needed, canBunk: 0, state: "short" };
   } else {
-    // Can bunk: a / (t + y) >= 0.75 => y = floor((4a - 3t) / 3)
+    // Can safely miss without dropping below 75%: y = floor((4a - 3t) / 3)
     const canBunk = Math.floor((4 * a - 3 * t) / 3);
     return { pct, needed: 0, canBunk, state: "safe" };
   }
@@ -430,17 +446,22 @@ function calcTarget(a, t){
 function renderAttDayStrip(){
   const stripBox = $("att-day-strip");
   if(!stripBox) return;
+
+  if(attViewMode === "subject"){
+    stripBox.style.display = "none";
+    return;
+  }
+  stripBox.style.display = "flex";
+
   const todayNum = new Date().getDay();
-  
   const options = [
-    { id: "today", label: todayNum === 0 ? "Today (Sunday)" : "Today (" + DAYS[todayNum].slice(0,3) + ")" },
+    { id: "today", label: todayNum === 0 ? "Today (Sun)" : "Today (" + DAYS[todayNum].slice(0,3) + ")" },
     { id: 1, label: "Monday" },
     { id: 2, label: "Tuesday" },
     { id: 3, label: "Wednesday" },
     { id: 4, label: "Thursday" },
     { id: 5, label: "Friday" },
-    { id: 6, label: "Saturday" },
-    { id: "all", label: "All Subjects" }
+    { id: 6, label: "Saturday" }
   ];
 
   stripBox.innerHTML = options.map(opt => {
@@ -453,7 +474,7 @@ function renderAttDayStrip(){
     const btn = e.target.closest("button");
     if(!btn) return;
     const v = btn.dataset.attday;
-    attDaySel = (v === "today" || v === "all") ? v : +v;
+    attDaySel = (v === "today") ? v : +v;
     renderAttendance();
   };
 }
@@ -462,11 +483,16 @@ function renderAttendance(){
   renderAttDayStrip();
   const list = myAtt();
   const summaryBox = $("att-summary");
-  const viewContainer = $("att-day-view");
-  const allTools = $("att-all-tools");
+  const viewContainer = $("att-content-view");
+  const subTools = $("att-subject-tools");
   if(!summaryBox || !viewContainer) return;
 
-  // Compute Overall Stats
+  // Update mode toggle buttons
+  document.querySelectorAll(".att-mode-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.mode === attViewMode);
+  });
+
+  // Calculate Overall Stats across all subjects
   let totAtt = 0, totHeld = 0;
   list.forEach(s => { totAtt += s.attended; totHeld += s.total; });
   const overall = calcTarget(totAtt, totHeld);
@@ -477,8 +503,8 @@ function renderAttendance(){
       <b>${totHeld ? overall.pct.toFixed(1) + '%' : '0.0%'}</b>
     </div>
     <div class="att-stat">
-      <small>Total Classes</small>
-      <b>${totAtt} / ${totHeld}</b>
+      <small>Total Class Sessions</small>
+      <b>${totAtt} / ${totHeld} attended</b>
     </div>
   `;
 
@@ -493,27 +519,26 @@ function renderAttendance(){
     overallHtml += `
       <div class="att-stat warn">
         <small>Needed for 75% Overall</small>
-        <b>Attend next ${overall.needed}</b>
+        <b>Attend next ${overall.needed} class${overall.needed > 1 ? 'es' : ''}</b>
       </div>
     `;
   } else {
     overallHtml += `
       <div class="att-stat good">
         <small>Safe to Miss (Overall)</small>
-        <b>Can miss ${overall.canBunk}</b>
+        <b>Can miss ${overall.canBunk} class${overall.canBunk > 1 ? 'es' : ''}</b>
       </div>
     `;
   }
   summaryBox.innerHTML = overallHtml;
 
-  // Check if viewing "All Subjects" vs Day-wise
-  if(attDaySel === "all"){
-    if(allTools) allTools.hidden = false;
-    renderAllSubjectsView(viewContainer, list);
-  } else {
-    if(allTools) allTools.hidden = true;
+  if(attViewMode === "day"){
+    if(subTools) subTools.hidden = true;
     const activeDayNum = attDaySel === "today" ? (new Date().getDay() || 1) : attDaySel;
     renderDayWiseView(viewContainer, activeDayNum);
+  } else {
+    if(subTools) subTools.hidden = false;
+    renderSubjectWiseView(viewContainer, list);
   }
 }
 
@@ -523,9 +548,9 @@ function renderDayWiseView(container, dayNum){
   const classesToday = dayList(dayNum);
 
   const headerDiv = document.createElement("div");
-  headerDiv.style.margin = "0.5rem 0 1rem";
-  headerDiv.innerHTML = `<h2 class="dayh" style="margin:0 0 .25rem">${dayName} Classes (${classesToday.length} scheduled)</h2>
-  <span style="font-size:.85rem;color:var(--dim)">Mark Present or Absent on the right end for each subject class.</span>`;
+  headerDiv.style.margin = "0.2rem 0 1rem";
+  headerDiv.innerHTML = `<h2 class="dayh" style="margin:0 0 .25rem">${dayName} Timetable Sessions (${classesToday.length})</h2>
+  <span style="font-size:.85rem;color:var(--dim)">Mark each class session as Present or Absent on the right end to update that subject's attendance.</span>`;
   container.appendChild(headerDiv);
 
   if(!classesToday.length){
@@ -577,7 +602,7 @@ function renderDayWiseView(container, dayNum){
           <span class="att-badge ${badgeClass}">${badgeText}</span>
         </div>
         <div class="att-counts">
-          Subject Cumulative: <b>${sub.attended}</b> attended / <b>${sub.total}</b> total held
+          Subject Standing: <b>${sub.attended}</b> attended / <b>${sub.total}</b> held
         </div>
         <div class="att-bar-shell" title="75% marker indicated">
           <div class="att-target-line" title="75% minimum threshold"></div>
@@ -593,8 +618,8 @@ function renderDayWiseView(container, dayNum){
         <button class="btn-att btn-abs" data-action="abs" data-id="${sub.id}" data-name="${cls.sub}">
           ✕ Absent
         </button>
-        ${sub.history && sub.history.length ? `<button class="btn-sub-opt" data-action="undo" data-id="${sub.id}" title="Undo last action">↩</button>` : ''}
-        <button class="btn-sub-opt" data-action="edit" data-id="${sub.id}" title="Edit numbers">✎</button>
+        ${sub.history && sub.history.length ? `<button class="btn-sub-opt" data-action="undo" data-id="${sub.id}" data-name="${cls.sub}" title="Undo last action">↩</button>` : ''}
+        <button class="btn-sub-opt" data-action="edit" data-id="${sub.id}" title="Edit records">✎</button>
       </div>
     `;
 
@@ -602,16 +627,16 @@ function renderDayWiseView(container, dayNum){
   });
 }
 
-function renderAllSubjectsView(container, list){
+function renderSubjectWiseView(container, list){
   container.innerHTML = "";
   const headerDiv = document.createElement("div");
-  headerDiv.style.margin = "0.5rem 0 1rem";
-  headerDiv.innerHTML = `<h2 class="dayh" style="margin:0 0 .25rem">All Registered Subjects (${list.length})</h2>
-  <span style="font-size:.85rem;color:var(--dim)">Cumulative semester attendance breakdown across all courses.</span>`;
+  headerDiv.style.margin = "0.2rem 0 1rem";
+  headerDiv.innerHTML = `<h2 class="dayh" style="margin:0 0 .25rem">Subject Attendance Summary (${list.length} subjects)</h2>
+  <span style="font-size:.85rem;color:var(--dim)">Track cumulative attendance, update counts manually, or log classes directly.</span>`;
   container.appendChild(headerDiv);
 
   if(!list.length){
-    container.innerHTML += '<p class="empty">No subjects found. Use the add form below to add one.</p>';
+    container.innerHTML += '<p class="empty">No subjects found. Add a subject using the form below.</p>';
     return;
   }
 
@@ -671,9 +696,9 @@ function renderAllSubjectsView(container, list){
         <button class="btn-att btn-abs" data-action="abs" data-id="${sub.id}" data-name="${sub.name}">
           ✕ Absent
         </button>
-        ${sub.history && sub.history.length ? `<button class="btn-sub-opt" data-action="undo" data-id="${sub.id}" title="Undo last action">↩</button>` : ''}
-        <button class="btn-sub-opt" data-action="edit" data-id="${sub.id}" title="Manually edit numbers">✎</button>
-        <button class="btn-sub-opt btn-sub-del" data-action="del" data-id="${sub.id}" title="Delete subject">✕</button>
+        ${sub.history && sub.history.length ? `<button class="btn-sub-opt" data-action="undo" data-id="${sub.id}" data-name="${sub.name}" title="Undo last action">↩</button>` : ''}
+        <button class="btn-sub-opt" data-action="edit" data-id="${sub.id}" title="Manually update records">✎ Edit</button>
+        <button class="btn-sub-opt btn-sub-del" data-action="del" data-id="${sub.id}" title="Remove subject">✕</button>
       </div>
     `;
 
@@ -718,14 +743,14 @@ function handleAttAction(action, id, optName){
     if(newT === null) return;
     const numA = parseInt(newA, 10), numT = parseInt(newT, 10);
     if(isNaN(numA) || isNaN(numT) || numA < 0 || numT < numA){
-      alert("Invalid: Total must be greater than or equal to attended.");
+      alert("Invalid input: Total held classes must be greater than or equal to attended classes.");
       return;
     }
     sub.attended = numA;
     sub.total = numT;
     sub.history = [];
     saveAttendance();
-    toast(`Updated ${sub.name} counts`);
+    toast(`Updated records for ${sub.name}`);
   } else if(action === "del"){
     if(confirm(`Remove ${sub.name} from attendance tracker?`)){
       attendance[user.id] = list.filter(s => s.id !== id);
@@ -735,19 +760,27 @@ function handleAttAction(action, id, optName){
   }
 }
 
-// Event delegation for Attendance actions
+// Mode toggle listener (By Day vs By Subject)
 document.addEventListener("click", e => {
-  const btn = e.target.closest("[data-action]");
-  if(!btn) return;
-  const action = btn.dataset.action;
-  const id = btn.dataset.id;
-  const optName = btn.dataset.name;
-  if(action && id){
-    handleAttAction(action, id, optName);
+  const modeBtn = e.target.closest(".att-mode-btn");
+  if(modeBtn){
+    attViewMode = modeBtn.dataset.mode;
+    renderAttendance();
+    return;
+  }
+
+  const actBtn = e.target.closest("[data-action]");
+  if(actBtn){
+    const action = actBtn.dataset.action;
+    const id = actBtn.dataset.id;
+    const optName = actBtn.dataset.name;
+    if(action && id){
+      handleAttAction(action, id, optName);
+    }
   }
 });
 
-// Event listener for adding custom subject in All view
+// Listener for custom subject addition
 document.addEventListener("DOMContentLoaded", () => {
   const form = $("add-sub-form");
   if(form){
@@ -777,4 +810,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </script>
 </body>
-</html
+</html>
