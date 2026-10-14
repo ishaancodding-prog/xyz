@@ -259,7 +259,9 @@ const HOL=[["2026-01-26","Republic Day","N","🇮🇳"],["2026-02-15","Mahashivr
 .map(h=>({date:new Date(h[0]+"T00:00:00"),name:h[1],type:HT[h[2]],em:h[3]}));
 const DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const $=id=>document.getElementById(id);
-let user={name:"",id:"",sec:"2"},notes={},sel=1,view="day";
+
+/* ---- Global State Variables Declared at the Top ---- */
+let user={name:"",id:"",sec:"2"},notes={},sel=1,view="day",attendance={},sessionMarks={},attViewMode="day",attDaySel="today";
 
 function tm(s){const[a,b]=s.split(":");return +a*60+ +b}
 function fmt(m){let h=Math.floor(m/60);const ap=h>=12?"PM":"AM";h=h%12||12;return h+":"+String(m%60).padStart(2,"0")+" "+ap}
@@ -323,7 +325,7 @@ function bot(raw){
   if(d===0)return "Sunday has no classes. Enjoy the day off.";
   if(d>0){const l=dayList(d);return l.length?`${DAYS[d]} for IT-${user.sec}:\n`+l.map(c=>`• ${fmt(c.s)}–${fmt(c.e)}: ${c.sub} in ${c.ven}${c.prof?" ("+c.prof+")":""}`).join("\n"):`No classes on ${DAYS[d]}.`}
   if(has("holiday","holidays","break","breaks","vacation")){const t=today0(),h=HOL.find(x=>x.date>=t);if(!h)return "No more holidays are listed for 2026.";const n=Math.round((h.date-t)/864e5);return `Next up: ${h.em} ${h.name} on ${dstr(h.date)}, ${n?n+" day"+(n>1?"s":"")+" away":"today"}.`}
-  const T=[[["data structures","dsa"],DSA,J],[["digital electronics","de"],DE,M],[["automata","formal languages","flat"],FLA,P],[["probability","statistics","stats"],PS,K],[["communication","etc"],ETC,G],[["fit","foundations"],FIT,A]];
+  const T=[[["data structures","dsa"],DSA,J],[[&quot;digital electronics","de"],DE,M],[["automata","formal languages","flat"],FLA,P],[["probability","statistics","stats"],PS,K],[["communication","etc"],ETC,G],[["fit","foundations"],FIT,A]];
   const hit=T.find(t=>t[0].some(k=>k.includes(" ")?q.includes(k):has(k)));
   if(has("who","professor","teacher","teaches","faculty")){if(hit)return `${hit[1]} is taught by ${hit[2]}.`;return "Faculty:\n"+T.map(t=>`• ${t[1]}: ${t[2]}`).join("\n")}
   if(has("venue","room","where","location")){if(hit){const v=[...new Set(mine().filter(c=>c.sub.startsWith(hit[1])).map(c=>c.ven))];return `${hit[1]} meets at ${v.join(" and ")}.`}return "Most lectures are in IT-202. Labs use IT-203, IT-204 or the Comp Engg. Dept."}
@@ -378,17 +380,7 @@ $("sugg").onclick=e=>{const b=e.target.closest("button");if(b)send(b.dataset.q)}
 $("save").onclick=()=>{const v=$("nt").value.trim();if(!v){$("nerr").hidden=false;return}$("nerr").hidden=true;
   myNotes().unshift({id:Date.now(),text:v,at:new Date().toLocaleString()});store(0,"nx_notes",notes);$("nt").value="";renderNotes();toast("Note saved")};
 
-notes=store(1,"nx_notes")||{};
-const saved=store(1,"nx_user");
-if(saved&&saved.name){user=saved;enter(true)}else{paintSky()}
-setInterval(()=>{paintSky();if(!$("app").hidden&&view==="day"){hero();if(sel==="All"||sel===new Date().getDay())timeline()}},1000);
-
 /* ---- Attendance Engine (Session-Level & Subject-Level) ---- */
-let attendance = {};
-let sessionMarks = {};
-let attViewMode = "day";
-let attDaySel = "today";
-
 const defaultSubs = [
   "Data Structures and Algorithms",
   "Effective Technical Communication",
@@ -455,7 +447,7 @@ function calcTarget(a, t){
     return { pct, needed, canBunk: 0, state: "short" };
   } else {
     const canBunk = Math.floor((4 * a - 3 * t) / 3);
-    return { pct, needed: 0, canBunk, state: "safe" };
+    return { pct, needed, canBunk, state: "safe" };
   }
 }
 
@@ -860,6 +852,12 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 });
+
+/* ---- Startup Call After All Declarations ---- */
+notes=store(1,"nx_notes")||{};
+const saved=store(1,"nx_user");
+if(saved&&saved.name){user=saved;enter(true)}else{paintSky()}
+setInterval(()=>{paintSky();if(!$("app").hidden&&view==="day"){hero();if(sel==="All"||sel===new Date().getDay())timeline()}},1000);
 </script>
 </body>
 </html>
