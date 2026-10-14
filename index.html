@@ -47,30 +47,6 @@ h2.dayh{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:1.6rem 0 .6rem;c
 .row.done{opacity:.45}
 .row.live .card{box-shadow:0 0 0 1px var(--c),0 0 36px -4px var(--c);background:rgba(8,10,28,.68)}
 .empty{color:var(--dim);padding:2rem 0}
-.mark{display:flex;gap:.5rem;margin-top:.7rem}
-.mark button{flex:1;background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:10px;padding:.4rem;color:var(--dim)}
-.mark button.p.on{background:#7ee2a8;color:#06231a;border-color:#7ee2a8;font-weight:600}
-.mark button.a.on{background:var(--bad);color:#2b0606;border-color:var(--bad);font-weight:600}
-.mark button:disabled{opacity:.4;cursor:not-allowed}
-.wk{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.9rem;color:var(--dim)}
-.wk button{background:var(--glass);border:1px solid var(--line);border-radius:99px;padding:.35rem .9rem}
-.wk button:disabled{opacity:.4;cursor:not-allowed}
-.pct{font:800 clamp(3rem,12vw,5.5rem)/1 "Bricolage Grotesque",sans-serif;letter-spacing:-.04em}
-.meter{height:10px;border-radius:9px;background:var(--line);position:relative;margin:1.6rem 0 .6rem}
-.meter i{display:block;height:100%;border-radius:9px;background:var(--c)}
-.meter b{position:absolute;left:75%;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
-.meter::after{content:"75%";position:absolute;left:75%;top:-1.35rem;transform:translateX(-50%);font-size:.72rem;color:var(--dim)}
-.sg{display:grid;gap:.8rem;margin-top:1rem}
-.sg b{font-weight:600;font-size:1.05rem}
-.sh{display:flex;justify-content:space-between;align-items:center;gap:.8rem 1rem;flex-wrap:wrap}
-.sh .mark{margin:0;flex:0 0 auto}
-.sh .mark button{flex:none;padding:.45rem 1rem;font-weight:600}
-.sh .mark button.p{border-color:#7ee2a8;color:#7ee2a8}
-.sh .mark button.a{border-color:var(--bad);color:var(--bad)}
-.need{display:inline-block;font-weight:600;border-radius:99px;padding:.2rem .85rem;background:var(--c);color:#14142b;margin-right:.6rem}
-.undo{background:none;border:0;padding:0;color:var(--dim);text-decoration:underline;font-size:.82rem}
-.undo:disabled{opacity:.4;cursor:not-allowed}
-.sg small{color:var(--dim)}
 .panel{background:var(--glass);border:1px solid var(--line);border-radius:18px;padding:1.2rem;backdrop-filter:blur(14px)}
 .chat{display:flex;flex-direction:column;gap:.7rem;padding:7rem 0 1rem}
 .msg{max-width:86%;padding:.7rem 1rem;border-radius:16px;white-space:pre-wrap;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(14px)}
@@ -103,8 +79,64 @@ h2.dayh{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:1.6rem 0 .6rem;c
 .dock button[aria-current=page]{background:var(--ink);color:#12142b;font-weight:600}
 .toast{position:fixed;top:calc(16px + env(safe-area-inset-top,0px));left:50%;transform:translate(-50%,-90px);background:var(--ink);color:#12142b;padding:.6rem 1.1rem;border-radius:99px;font-weight:600;transition:transform .3s;z-index:9}
 .toast.on{transform:translate(-50%,0)}
-@media(max-width:520px){.row{grid-template-columns:1fr;gap:.2rem}.row time{text-align:left;padding:0}.dock button{padding:.55rem .62rem;font-size:.86rem}}
+@media(max-width:520px){.row{grid-template-columns:1fr;gap:.2rem}.row time{text-align:left;padding:0}}
 @media(prefers-reduced-motion:reduce){.orb,.toast{transition:none}}
+
+/* ---- attendance styles ---- */
+.att-hero{padding:min(18vh,6rem) 0 1.5rem}
+.att-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.8rem;margin-top:1rem}
+.att-stat{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:14px;padding:.9rem 1.1rem}
+.att-stat small{display:block;color:var(--dim);font-size:.8rem;margin-bottom:.2rem}
+.att-stat b{font:800 1.6rem "Bricolage Grotesque",sans-serif;color:var(--ink)}
+.att-stat.good b{color:#4ade80}
+.att-stat.warn b{color:var(--bad)}
+
+.att-add-box{margin:1.5rem 0;display:flex;gap:.5rem;flex-wrap:wrap}
+.att-add-box input{flex:1;min-width:220px}
+
+.att-list{display:flex;flex-direction:column;gap:1rem}
+.att-card{display:flex;justify-content:space-between;align-items:center;gap:1.25rem;flex-wrap:wrap;padding:1.1rem 1.3rem;position:relative}
+.att-info{flex:1;min-width:240px}
+.att-name-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.35rem}
+.att-title{font-size:1.1rem;font-weight:600;color:var(--ink)}
+.att-badge{font-size:.75rem;padding:.2rem .6rem;border-radius:99px;font-weight:600;font-family:inherit}
+.att-badge.safe{background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.3)}
+.att-badge.short{background:rgba(255,138,138,.15);color:var(--bad);border:1px solid rgba(255,138,138,.3)}
+.att-badge.neutral{background:rgba(246,241,231,.1);color:var(--dim);border:1px solid var(--line)}
+
+.att-counts{font-size:.9rem;color:var(--dim);margin-bottom:.6rem}
+.att-counts b{color:var(--ink);font-weight:600}
+
+.att-bar-shell{position:relative;height:8px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;margin:.5rem 0}
+.att-bar-fill{height:100%;border-radius:99px;transition:width .4s ease}
+.att-bar-fill.safe{background:#4ade80}
+.att-bar-fill.short{background:var(--bad)}
+.att-target-line{position:absolute;left:75%;top:0;bottom:0;width:2px;background:var(--amber);opacity:.8;z-index:2}
+
+.att-advice{font-size:.85rem;font-weight:500;margin-top:.45rem;display:flex;align-items:center;gap:.4rem}
+.att-advice.safe{color:#4ade80}
+.att-advice.short{color:var(--bad)}
+.att-advice.neutral{color:var(--dim)}
+
+.att-actions{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.btn-att{border:0;padding:.55rem 1rem;border-radius:12px;font-weight:600;font-size:.9rem;display:inline-flex;align-items:center;gap:.35rem;transition:transform .15s,opacity .15s}
+.btn-att:hover{transform:translateY(-1px)}
+.btn-att:active{transform:translateY(0)}
+.btn-pres{background:rgba(74,222,128,.2);color:#4ade80;border:1px solid rgba(74,222,128,.4)}
+.btn-pres:hover{background:rgba(74,222,128,.3)}
+.btn-abs{background:rgba(255,138,138,.2);color:var(--bad);border:1px solid rgba(255,138,138,.4)}
+.btn-abs:hover{background:rgba(255,138,138,.3)}
+.btn-sub-opt{background:none;border:1px solid var(--line);border-radius:8px;color:var(--dim);padding:.35rem .6rem;font-size:.8rem}
+.btn-sub-opt:hover{color:var(--ink);border-color:var(--dim)}
+.btn-sub-del{color:var(--bad);border-color:rgba(255,138,138,.3)}
+.btn-sub-del:hover{background:rgba(255,138,138,.1)}
+
+@media(max-width:600px){
+  .att-card{flex-direction:column;align-items:stretch}
+  .att-actions{justify-content:space-between;width:100%;margin-top:.5rem;padding-top:.7rem;border-top:1px solid var(--line)}
+  .btn-att{flex:1;justify-content:center}
+}
+
 </style>
 </head>
 <body>
@@ -131,6 +163,24 @@ h2.dayh{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:1.6rem 0 .6rem;c
       <div class="strip" id="strip" role="group" aria-label="Pick a day"></div>
       <div id="tl"></div>
     </section>
+        <section id="v-att" hidden>
+      <div class="att-hero">
+        <div class="when" style="color:var(--dim)">75% Minimum Criteria Tracker</div>
+        <h1 class="big">Attendance</h1>
+        <p class="sub">Track attended and missed classes. See exactly how many you need to reach or maintain 75%.</p>
+        
+        <div class="att-summary" id="att-summary"></div>
+      </div>
+
+      <div class="panel" style="margin-bottom:1.5rem">
+        <form class="att-add-box" id="add-sub-form">
+          <input class="in" id="new-sub-name" placeholder="Add subject (e.g. Computer Networks, Cloud Lab)..." autocomplete="off" aria-label="Subject name">
+          <button class="go" type="submit">+ Add subject</button>
+        </form>
+      </div>
+
+      <div class="att-list" id="att-list"></div>
+    </section>
     <section id="v-ask" hidden>
       <div class="chat" id="log"><div class="msg">Ask me about any day's classes, who teaches a subject, where a class is, or the next holiday.</div></div>
       <div class="strip" id="sugg"></div>
@@ -150,15 +200,9 @@ h2.dayh{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:1.6rem 0 .6rem;c
       <p style="color:var(--dim);font-size:.9rem">Notes are saved on this device only.</p>
       <div class="notes" id="notes"></div>
     </section>
-    <section id="v-att" hidden>
-      <div class="next" id="attsum"></div>
-      <div class="sg" id="attsub"></div>
-      <h2 class="dayh">Day-wise log</h2>
-      <div id="attlog"></div>
-    </section>
   </main>
   <nav class="dock" id="dock" aria-label="Sections">
-    <button data-v="day" aria-current="page">Day</button><button data-v="ask">Ask</button><button data-v="brk">Breaks</button><button data-v="notes">Notes</button><button data-v="att">Attendance</button>
+    <button data-v="day" aria-current="page">Day</button><button data-v="att">Attendance</button><button data-v="ask">Ask</button><button data-v="brk">Breaks</button><button data-v="notes">Notes</button>
   </nav>
 </div>
 <div class="toast" id="toast" role="status"></div>
@@ -181,7 +225,7 @@ const HOL=[["2026-01-26","Republic Day","N","🇮🇳"],["2026-02-15","Mahashivr
 .map(h=>({date:new Date(h[0]+"T00:00:00"),name:h[1],type:HT[h[2]],em:h[3]}));
 const DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const $=id=>document.getElementById(id);
-let user={name:"",id:"",sec:"2"},notes={},att={},off=0,lastMin=-1,sel=1,view="day";
+let user={name:"",id:"",sec:"2"},notes={},sel=1,view="day";
 
 function tm(s){const[a,b]=s.split(":");return +a*60+ +b}
 function fmt(m){let h=Math.floor(m/60);const ap=h>=12?"PM":"AM";h=h%12||12;return h+":"+String(m%60).padStart(2,"0")+" "+ap}
@@ -225,44 +269,18 @@ function strip(){
   const td=new Date().getDay();
   $("strip").innerHTML=["All",1,2,3,4,5,6].map(v=>`<button class="chip${v===td?" today":""}" data-d="${v}" aria-pressed="${v===sel}">${v==="All"?"Whole week":DAYS[v]}</button>`).join("");
 }
-function row(c,st,k,dis){const col=`hsl(${hue(c.sub)} 75% 68%)`;
-  return `<div class="row ${st}" style="--c:${col}"><time>${fmt(c.s)} – ${fmt(c.e)}</time><div class="card"><em>${c.ven}</em><b>${c.sub}</b><span>${c.prof||"All students"}</span>${k?markBtns(k,dis):""}</div></div>`}
+function row(c,st){const col=`hsl(${hue(c.sub)} 75% 68%)`;
+  return `<div class="row ${st}" style="--c:${col}"><time>${fmt(c.s)} – ${fmt(c.e)}</time><div class="card"><em>${c.ven}</em><b>${c.sub}</b><span>${c.prof||"All students"}</span></div></div>`}
 function timeline(){
   const n=new Date(),nm=n.getHours()*60+n.getMinutes(),td=n.getDay();
   const ds=sel==="All"?[1,2,3,4,5,6]:[sel];let h="";
   ds.forEach(d=>{const l=dayList(d);
     if(sel==="All")h+=`<h2 class="dayh">${DAYS[d]}</h2>`;
     if(!l.length){h+=`<div class="empty">No classes on ${DAYS[d]}.</div>`;return}
-    h+=l.map(c=>{const lv=off===0&&d===td,st=lv?(nm>=c.e?"done":nm>=c.s?"live":""):"",k=sel==="All"?"":attKey(d,c);return row(c,st,k,lv&&nm<c.s)}).join("")});
-  if(sel!=="All"){const dt=dateFor(sel);h=`<div class="wk"><button data-w="1">‹ Earlier week</button><span>${dt.toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"})}</span><button data-w="-1"${off===0?" disabled":""}>Later week ›</button></div>`+h}else h=`<div class="wk"><span>Pick a single day to mark attendance.</span></div>`+h;
+    h+=l.map(c=>row(c,d===td?(nm>=c.e?"done":nm>=c.s?"live":""):"")).join("")});
   $("tl").innerHTML=h;
 }
 
-/* ---- attendance ---- */
-const TARGET=75;
-const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
-function dateFor(day){const t=today0();t.setDate(t.getDate()-((t.getDay()-day+7)%7)-off*7);return t}
-const attKey=(d,c)=>iso(dateFor(d))+"|"+c.s+"|"+c.sub;
-const myAtt=()=>att[user.id]||(att[user.id]={});
-function markBtns(k,dis){const v=myAtt()[k],d=dis?" disabled":"";return `<div class="mark"><button class="p${v==="p"?" on":""}" data-k="${k}" data-s="p"${d} aria-pressed="${v==="p"}">Present</button><button class="a${v==="a"?" on":""}" data-k="${k}" data-s="a"${d} aria-pressed="${v==="a"}">Absent</button></div>`}
-function stat(p,t){const pc=t?p/t*100:0;let msg,need=0,skip=0;
-  if(!t)msg="No classes marked yet. Tap Present or Absent to start.";
-  else if(pc>=TARGET){skip=Math.floor((4*p-3*t)/3);msg=skip>0?`You can miss ${skip} more class${skip>1?"es":""} and stay at 75%.`:"Right on the edge: missing the next class drops you below 75%."}
-  else{need=3*t-4*p;msg=`Attend the next ${need} class${need>1?"es":""} in a row to reach 75%.`}
-  const tag=!t?"":need?`Attend ${need} more`:skip?`Can miss ${skip}`:"On the edge";
-  return{pc,msg,need,skip,tag}}
-const meter=pc=>`<div class="meter" style="--c:${pc>=TARGET?"#7ee2a8":pc>=65?"#ffc857":"#ff8a8a"}"><i style="width:${Math.min(100,pc)}%"></i><b></b></div>`;
-function renderAtt(){
-  const subs={},days={},A=myAtt();let P=0,T=0;
-  Object.entries(A).forEach(([k,v])=>{const[dt,,...r]=k.split("|"),n=r.join("|"),o=subs[n]||(subs[n]={p:0,t:0}),dd=days[dt]||(days[dt]={p:0,a:0});o.t++;T++;dd[v]++;if(v==="p"){o.p++;P++}});
-  const o=stat(P,T);
-  $("attsum").innerHTML=T?`<div class="when" style="color:var(--dim)">Overall attendance</div><div class="pct">${o.pc.toFixed(1)}%</div>${meter(o.pc)}<div class="sub">${P} of ${T} classes attended. ${o.msg}</div>`:`<h1 class="big">Track your 75%.</h1><div class="sub">Tap Present or Absent next to a subject below, or mark classes by day in the Day tab.</div>`;
-  const names=[...new Set([...mine().map(c=>c.sub),...Object.keys(subs)])].sort();
-  $("attsub").innerHTML=names.map(n=>{const s=subs[n]||{p:0,t:0},r=stat(s.p,s.t),col=r.pc>=TARGET?"#7ee2a8":r.pc>=65?"#ffc857":"#ff8a8a",
-    hasQ=Object.keys(A).some(k=>k.split("|")[1].startsWith("q")&&k.endsWith("|"+n));
-    return `<div class="panel"><div class="sh"><div><b>${n}</b><br><small>${s.p} of ${s.t} attended · ${r.pc.toFixed(0)}%</small></div><div class="mark"><button class="p" data-sub="${n}" data-s="p">Present</button><button class="a" data-sub="${n}" data-s="a">Absent</button></div></div>${meter(r.pc)}${r.tag?`<span class="need" style="--c:${col}">${r.tag}</span>`:""}<small>${r.msg}</small> <button class="undo" data-sub="${n}" data-undo="1"${hasQ?"":" disabled"}>Undo last</button></div>`}).join("");
-  $("attlog").innerHTML=T?Object.keys(days).sort().reverse().slice(0,14).map(d=>{const x=days[d];return `<div class="hrow"><div>${new Date(d+"T00:00:00").toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"long"})}<small>${x.p} present · ${x.a} absent</small></div></div>`}).join(""):'<p class="empty">Nothing logged yet.</p>';
-}
 /* ---- ask ---- */
 function say(who,t){const m=document.createElement("div");m.className="msg "+who;m.textContent=t;$("log").appendChild(m);m.scrollIntoView({block:"end",behavior:"smooth"})}
 function bot(raw){
@@ -304,39 +322,296 @@ function renderNotes(){
 }
 
 /* ---- shell ---- */
-function go(v){view=v;["day","ask","brk","notes","att"].forEach(x=>$("v-"+x).hidden=x!==v);
-  document.querySelectorAll("#dock button").forEach(b=>{if(b.dataset.v===v)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+function go(v){view=v;["day","att","ask","brk","notes"].forEach(x=>$("v-"+x).hidden=x!==v);
+  document.querySelectorAll("#dock button").forEach(b=>{if(b.dataset.v===v)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});if(v==="att")renderAttendance();
   scrollTo(0,0)}
 function enter(auto){
   $("auth").hidden=true;$("app").hidden=false;
   $("who").innerHTML="";const a=document.createElement("span");a.textContent=user.name.split(" ")[0];
   const s=document.createElement("small");s.textContent=`IT-${user.sec} · ${user.id}`;$("who").append(a,s);
   const d=new Date().getDay();sel=d===0?1:d;
-  off=0;strip();timeline();hero();breaks();renderNotes();renderAtt();paintSky();go("day");
+  strip();timeline();hero();breaks();renderNotes();initAttendance();paintSky();go("day");
   if(!auto)toast("Signed in")}
 $("login").onsubmit=e=>{e.preventDefault();const n=$("nm").value.trim(),i=$("sid").value.trim();
   if(!n||!i){$("err").hidden=false;return}$("err").hidden=true;
   user={name:n,id:i,sec:document.querySelector("input[name=sec]:checked").value};store(0,"nx_user",user);enter(false)};
 $("out").onclick=()=>{try{localStorage.removeItem("nx_user")}catch(e){}$("app").hidden=true;$("auth").hidden=false;$("login").reset()};
 $("dock").onclick=e=>{const b=e.target.closest("button");if(b)go(b.dataset.v)};
-$("strip").onclick=e=>{const b=e.target.closest("button");if(!b)return;sel=b.dataset.d==="All"?"All":+b.dataset.d;off=0;strip();timeline()};
+$("strip").onclick=e=>{const b=e.target.closest("button");if(!b)return;sel=b.dataset.d==="All"?"All":+b.dataset.d;strip();timeline()};
 $("askf").onsubmit=e=>{e.preventDefault();send($("q").value)};
-$("attsub").onclick=e=>{const b=e.target.closest("button");if(!b)return;const A=myAtt(),n=b.dataset.sub;
-  if(b.dataset.undo){const ks=Object.keys(A).filter(k=>k.split("|")[1].startsWith("q")&&k.endsWith("|"+n)).sort();if(ks.length)delete A[ks[ks.length-1]]}
-  else if(b.dataset.s)A[iso(today0())+"|q"+Date.now()+"|"+n]=b.dataset.s;
-  store(0,"nx_att",att);renderAtt();timeline()};
-$("tl").onclick=e=>{const b=e.target.closest("button");if(!b)return;
-  if(b.dataset.w){off=Math.max(0,off+ +b.dataset.w);timeline();return}
-  if(b.dataset.k){const a=myAtt();if(a[b.dataset.k]===b.dataset.s)delete a[b.dataset.k];else a[b.dataset.k]=b.dataset.s;store(0,"nx_att",att);timeline();renderAtt()}};
 $("sugg").innerHTML=["Monday schedule","Who teaches Data Structures?","Next holiday","Where is Probability?"].map(t=>`<button class="chip" data-q="${t}">${t}</button>`).join("");
 $("sugg").onclick=e=>{const b=e.target.closest("button");if(b)send(b.dataset.q)};
 $("save").onclick=()=>{const v=$("nt").value.trim();if(!v){$("nerr").hidden=false;return}$("nerr").hidden=true;
   myNotes().unshift({id:Date.now(),text:v,at:new Date().toLocaleString()});store(0,"nx_notes",notes);$("nt").value="";renderNotes();toast("Note saved")};
 
-notes=store(1,"nx_notes")||{};att=store(1,"nx_att")||{};
+notes=store(1,"nx_notes")||{};
 const saved=store(1,"nx_user");
 if(saved&&saved.name){user=saved;enter(true)}else{paintSky()}
-setInterval(()=>{paintSky();if(!$("app").hidden&&view==="day"){hero();const m=new Date().getMinutes();if(m!==lastMin){lastMin=m;timeline()}}},1000);
+setInterval(()=>{paintSky();if(!$("app").hidden&&view==="day"){hero();if(sel==="All"||sel===new Date().getDay())timeline()}},1000);
+
+/* ---- attendance logic ---- */
+let attendance = {};
+
+const defaultSubjects = [
+  "Data Structures and Algorithms",
+  "Effective Technical Communication",
+  "Foundations of Information Technology",
+  "Digital Electronics",
+  "Probability and Statistics",
+  "Formal Languages and Automata Theory",
+  "NSS/NCC"
+];
+
+function myAtt(){
+  if(!attendance[user.id]){
+    // Derive subjects from timetable for this section + standard curriculum
+    const secSubs = [...new Set(mine().map(c => c.sub.replace(/ \(Practical\)|\(Tutorial\/Practical\)|\(Tutorial\)/, "").trim()))];
+    const initialList = secSubs.length ? secSubs : defaultSubjects;
+    attendance[user.id] = initialList.map(name => ({
+      id: "sub_" + Math.random().toString(36).substr(2, 9),
+      name: name,
+      attended: 0,
+      total: 0,
+      history: []
+    }));
+  }
+  return attendance[user.id];
+}
+
+function initAttendance(){
+  attendance = store(1, "nx_attendance") || {};
+  myAtt();
+}
+
+function saveAttendance(){
+  store(0, "nx_attendance", attendance);
+  renderAttendance();
+}
+
+function calcTarget(a, t){
+  if(t === 0) return { pct: 0, needed: 0, canBunk: 0, state: "none" };
+  const pct = (a / t) * 100;
+  if(pct < 75){
+    // Needed to reach 75%: (a + x) / (t + x) >= 0.75 => x = 3t - 4a
+    const needed = Math.max(0, 3 * t - 4 * a);
+    return { pct, needed, canBunk: 0, state: "short" };
+  } else {
+    // Can bunk: a / (t + y) >= 0.75 => y = floor((4a - 3t) / 3)
+    const canBunk = Math.floor((4 * a - 3 * t) / 3);
+    return { pct, needed: 0, canBunk, state: "safe" };
+  }
+}
+
+function renderAttendance(){
+  const list = myAtt();
+  const box = $("att-list");
+  const summaryBox = $("att-summary");
+  if(!box || !summaryBox) return;
+
+  // Compute Overall Stats
+  let totAtt = 0, totHeld = 0;
+  list.forEach(s => { totAtt += s.attended; totHeld += s.total; });
+  const overall = calcTarget(totAtt, totHeld);
+
+  let overallHtml = `
+    <div class="att-stat ${overall.state === 'safe' ? 'good' : overall.state === 'short' ? 'warn' : ''}">
+      <small>Overall Attendance</small>
+      <b>${totHeld ? overall.pct.toFixed(1) + '%' : '0.0%'}</b>
+    </div>
+    <div class="att-stat">
+      <small>Total Classes</small>
+      <b>${totAtt} / ${totHeld}</b>
+    </div>
+  `;
+
+  if(totHeld === 0){
+    overallHtml += `
+      <div class="att-stat">
+        <small>75% Criteria Status</small>
+        <span style="color:var(--dim);font-size:.95rem">Mark classes to begin</span>
+      </div>
+    `;
+  } else if(overall.state === 'short'){
+    overallHtml += `
+      <div class="att-stat warn">
+        <small>Need for 75% Overall</small>
+        <b>Attend next ${overall.needed}</b>
+      </div>
+    `;
+  } else {
+    overallHtml += `
+      <div class="att-stat good">
+        <small>Safe to Miss (Overall)</small>
+        <b>Can miss ${overall.canBunk}</b>
+      </div>
+    `;
+  }
+  summaryBox.innerHTML = overallHtml;
+
+  // Render Subject Cards
+  box.innerHTML = "";
+  if(!list.length){
+    box.innerHTML = '<p class="empty">No subjects added yet. Add a subject using the form above.</p>';
+    return;
+  }
+
+  list.forEach(sub => {
+    const card = document.createElement("div");
+    card.className = "panel att-card";
+
+    const stat = calcTarget(sub.attended, sub.total);
+    const pctStr = sub.total ? stat.pct.toFixed(1) + "%" : "0.0%";
+
+    let badgeClass = "neutral", badgeText = "No classes yet";
+    let barClass = "safe";
+    let adviceHtml = "";
+
+    if(sub.total > 0){
+      if(stat.state === "safe"){
+        badgeClass = "safe";
+        badgeText = pctStr;
+        barClass = "safe";
+        if(stat.canBunk > 0){
+          adviceHtml = `<span class="att-advice safe">✅ Safe: You can miss next <b>${stat.canBunk}</b> class${stat.canBunk > 1 ? 'es' : ''} without dropping below 75%.</span>`;
+        } else {
+          adviceHtml = `<span class="att-advice safe">🎯 Exactly on track (75%): Attend the next class to maintain criteria!</span>`;
+        }
+      } else {
+        badgeClass = "short";
+        badgeText = pctStr;
+        barClass = "short";
+        adviceHtml = `<span class="att-advice short">⚠️ Need to attend next <b>${stat.needed}</b> class${stat.needed > 1 ? 'es' : ''} consecutively to reach 75%.</span>`;
+      }
+    } else {
+      adviceHtml = `<span class="att-advice neutral">No attendance recorded yet. Tap Present or Absent to log.</span>`;
+    }
+
+    const barWidth = sub.total ? Math.min(100, Math.round(stat.pct)) : 0;
+
+    card.innerHTML = `
+      <div class="att-info">
+        <div class="att-name-row">
+          <span class="att-title">${sub.name}</span>
+          <span class="att-badge ${badgeClass}">${badgeText}</span>
+        </div>
+        <div class="att-counts">
+          Classes: <b>${sub.attended}</b> attended / <b>${sub.total}</b> total held
+        </div>
+        <div class="att-bar-shell" title="75% marker indicated">
+          <div class="att-target-line" title="75% minimum threshold"></div>
+          <div class="att-bar-fill ${barClass}" style="width:${barWidth}%"></div>
+        </div>
+        ${adviceHtml}
+      </div>
+
+      <div class="att-actions">
+        <button class="btn-att btn-pres" data-action="pres" data-id="${sub.id}">
+          ✓ Present
+        </button>
+        <button class="btn-att btn-abs" data-action="abs" data-id="${sub.id}">
+          ✕ Absent
+        </button>
+        ${sub.history && sub.history.length ? `<button class="btn-sub-opt" data-action="undo" data-id="${sub.id}" title="Undo last action">↩</button>` : ''}
+        <button class="btn-sub-opt" data-action="edit" data-id="${sub.id}" title="Manually edit numbers">✎</button>
+        <button class="btn-sub-opt btn-sub-del" data-action="del" data-id="${sub.id}" title="Delete subject">✕</button>
+      </div>
+    `;
+
+    box.appendChild(card);
+  });
+}
+
+function handleAttAction(action, id){
+  const list = myAtt();
+  const sub = list.find(s => s.id === id);
+  if(!sub) return;
+
+  if(!sub.history) sub.history = [];
+
+  if(action === "pres"){
+    sub.attended += 1;
+    sub.total += 1;
+    sub.history.push("P");
+    saveAttendance();
+    toast(`${sub.name}: Marked Present`);
+  } else if(action === "abs"){
+    sub.total += 1;
+    sub.history.push("A");
+    saveAttendance();
+    toast(`${sub.name}: Marked Absent`);
+  } else if(action === "undo"){
+    if(!sub.history.length) return;
+    const last = sub.history.pop();
+    if(last === "P"){
+      sub.attended = Math.max(0, sub.attended - 1);
+      sub.total = Math.max(0, sub.total - 1);
+    } else if(last === "A"){
+      sub.total = Math.max(0, sub.total - 1);
+    }
+    saveAttendance();
+    toast("Undid last entry");
+  } else if(action === "edit"){
+    const newA = prompt(`Enter attended classes for ${sub.name}:`, sub.attended);
+    if(newA === null) return;
+    const newT = prompt(`Enter total classes held for ${sub.name}:`, sub.total);
+    if(newT === null) return;
+    const numA = parseInt(newA, 10), numT = parseInt(newT, 10);
+    if(isNaN(numA) || isNaN(numT) || numA < 0 || numT < numA){
+      alert("Invalid input: Total must be greater than or equal to attended.");
+      return;
+    }
+    sub.attended = numA;
+    sub.total = numT;
+    sub.history = [];
+    saveAttendance();
+    toast("Updated attendance numbers");
+  } else if(action === "del"){
+    if(confirm(`Remove ${sub.name} from attendance tracker?`)){
+      attendance[user.id] = list.filter(s => s.id !== id);
+      saveAttendance();
+      toast(`Removed ${sub.name}`);
+    }
+  }
+}
+
+// Event delegation for Attendance actions
+document.addEventListener("click", e => {
+  const btn = e.target.closest("[data-action]");
+  if(!btn) return;
+  const action = btn.dataset.action;
+  const id = btn.dataset.id;
+  if(action && id){
+    handleAttAction(action, id);
+  }
+});
+
+// Event listener for adding new subject
+document.addEventListener("DOMContentLoaded", () => {
+  const form = $("add-sub-form");
+  if(form){
+    form.onsubmit = e => {
+      e.preventDefault();
+      const inp = $("new-sub-name");
+      const name = inp.value.trim();
+      if(!name) return;
+      const list = myAtt();
+      if(list.some(s => s.name.toLowerCase() === name.toLowerCase())){
+        toast("Subject already exists");
+        return;
+      }
+      list.push({
+        id: "sub_" + Math.random().toString(36).substr(2, 9),
+        name: name,
+        attended: 0,
+        total: 0,
+        history: []
+      });
+      saveAttendance();
+      inp.value = "";
+      toast(`Added ${name}`);
+    };
+  }
+});
+
 </script>
 </body>
-</html>
