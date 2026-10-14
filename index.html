@@ -174,7 +174,7 @@ h2.dayh{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:1.6rem 0 .6rem;c
 <div class="auth" id="auth">
   <form id="login">
     <h1>Your day, in the sky.</h1>
-    <p style="color:var(--dim);margin:0 0 1rem">Enter your details or click below to access the academic workspace.</p>
+    <p style="color:var(--dim);margin:0 0 1rem">Enter your details or click below to view today's timetable.</p>
     
     <label for="nm">Full name</label>
     <input class="in" id="nm" autocomplete="name" value="Aditi Sharma" placeholder="Aditi Sharma">
@@ -193,7 +193,7 @@ h2.dayh{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:1.6rem 0 .6rem;c
     <button class="go" type="submit" id="btn-show-day" style="width:100%;margin-top:1.4rem;padding:.9rem">Show my day →</button>
 
     <div style="margin-top:1.2rem;text-align:center">
-      <span style="font-size:.78rem;color:var(--dim);text-transform:uppercase;letter-spacing:.05em">One-Tap Direct Access</span>
+      <span style="font-size:.78rem;color:var(--dim);text-transform:uppercase;letter-spacing:.05em">One-Tap Instant Entry</span>
       <div style="display:flex;gap:.5rem;margin-top:.5rem">
         <button type="button" class="ghost" style="flex:1;font-size:.85rem;padding:.6rem" onclick="quickLogin('1')">⚡ Section IT-1</button>
         <button type="button" class="ghost" style="flex:1;font-size:.85rem;padding:.6rem" onclick="quickLogin('2')">⚡ Section IT-2</button>
@@ -396,3 +396,647 @@ function renderNotes(){
     const t=document.createElement("div");t.textContent=n.text;
     const f=document.createElement("small");f.textContent=n.at;
     const b=document.createElement("button");b.className="del";b.textContent="Delete";b.onclick=()=>{notes[user.id]=l.filter(x=>x.id!==n.id);store(0,"nx_notes",notes);renderNotes()};
+    f.appendChild(b);c.append(t,f);box.appendChild(c)});
+}
+
+/* ---- shell & direct login ---- */
+function go(v){view=v;["day","att","ask","brk","notes"].forEach(x=>$("v-"+x).hidden=x!==v);
+  document.querySelectorAll("#dock button").forEach(b=>{if(b.dataset.v===v)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});if(v==="att")renderAttendance();
+  scrollTo(0,0)}
+
+function quickLogin(secVal){
+  const nameVal = $("nm") ? ($("nm").value.trim() || "Aditi Sharma") : "Aditi Sharma";
+  const idVal = $("sid") ? ($("sid").value.trim() || "24IT045") : "24IT045";
+  const sec = secVal || "2";
+  const rad = document.querySelector(`input[name=sec][value="${sec}"]`);
+  if(rad) rad.checked = true;
+  user = { name: nameVal, id: idVal, sec: sec };
+  store(0, "nx_user", user);
+  enter(false);
+}
+
+function enter(auto){
+  const authEl = $("auth");
+  const appEl = $("app");
+  if(authEl){ authEl.hidden = true; authEl.style.display = "none"; }
+  if(appEl){ appEl.hidden = false; appEl.style.display = "block"; }
+
+  const whoEl = $("who");
+  if(whoEl){
+    whoEl.innerHTML = "";
+    const a = document.createElement("span");
+    a.textContent = (user.name || "Student").split(" ")[0];
+    const s = document.createElement("small");
+    s.textContent = `IT-${user.sec || "2"} · ${user.id || "24IT045"}`;
+    whoEl.append(a, s);
+  }
+
+  const d = new Date().getDay();
+  sel = (d === 0) ? "All" : d;
+
+  try { strip(); } catch(e){}
+  try { timeline(); } catch(e){}
+  try { hero(); } catch(e){}
+  try { breaks(); } catch(e){}
+  try { renderNotes(); } catch(e){}
+  try { initAttendance(); } catch(e){}
+  try { paintSky(); } catch(e){}
+  try { go("day"); } catch(e){}
+
+  if(!auto) toast("Signed in");
+}
+
+$("login").onsubmit = e => {
+  e.preventDefault();
+  const n = ($("nm") && $("nm").value.trim()) ? $("nm").value.trim() : "Aditi Sharma";
+  const i = ($("sid") && $("sid").value.trim()) ? $("sid").value.trim() : "24IT045";
+  const secRadio = document.querySelector("input[name=sec]:checked");
+  const sec = secRadio ? secRadio.value : "2";
+
+  if($("err")) $("err").hidden = true;
+  user = { name: n, id: i, sec: sec };
+  store(0, "nx_user", user);
+  enter(false);
+};
+
+$("out").onclick=()=>{try{localStorage.removeItem("nx_user")}catch(e){}$("app").hidden=true;$("app").style.display="none";$("auth").hidden=false;$("auth").style.display="grid";$("login").reset()};
+$("dock").onclick=e=>{const b=e.target.closest("button");if(b)go(b.dataset.v)};
+$("strip").onclick=e=>{const b=e.target.closest("button");if(!b)return;sel=b.dataset.d==="All"?"All":+b.dataset.d;strip();timeline()};
+$("askf").onsubmit=e=>{e.preventDefault();send($("q").value)};
+$("sugg").innerHTML=["Monday schedule","Who teaches Data Structures?","Next holiday","Where is Probability?"].map(t=>`<button class="chip" data-q="${t}">${t}</button>`).join("");
+$("sugg").onclick=e=>{const b=e.target.closest("button");if(b)send(b.dataset.q)};
+$("save").onclick=()=>{const v=$("nt").value.trim();if(!v){$("nerr").hidden=false;return}$("nerr").hidden=true;
+  myNotes().unshift({id:Date.now(),text:v,at:new Date().toLocaleString()});store(0,"nx_notes",notes);$("nt").value="";renderNotes();toast("Note saved")};
+
+/* ---- Attendance Engine (Date-Specific Records & Subject Tracker) ---- */
+const defaultSubs = [
+  "Data Structures and Algorithms",
+  "Effective Technical Communication",
+  "Foundations of Information Technology",
+  "Digital Electronics",
+  "Probability and Statistics",
+  "Formal Languages and Automata Theory",
+  "NSS/NCC"
+];
+
+function formatDateKey(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function myAtt(){
+  if(!attendance[user.id]){
+    const secSubs = [...new Set(mine().map(c => c.sub.replace(/ \(Practical\)|\(Tutorial\/Practical\)|\(Tutorial\)/, "").trim()))];
+    const initialList = secSubs.length ? secSubs : defaultSubs;
+    attendance[user.id] = initialList.map(name => ({
+      id: "sub_" + Math.random().toString(36).substr(2, 9),
+      name: name,
+      attended: 0,
+      total: 0
+    }));
+  }
+  return attendance[user.id];
+}
+
+function mySessions(){
+  if(!sessionMarks[user.id]) sessionMarks[user.id] = {};
+  return sessionMarks[user.id];
+}
+
+function initAttendance(){
+  attendance = store(1, "nx_attendance") || {};
+  sessionMarks = store(1, "nx_sessions") || {};
+  attSelectedDate = new Date();
+  myAtt();
+}
+
+function saveAttendance(shouldRender = true){
+  store(0, "nx_attendance", attendance);
+  store(0, "nx_sessions", sessionMarks);
+  if(shouldRender) renderAttendance();
+}
+
+function getSubjectRecord(subName){
+  const list = myAtt();
+  const cleanName = subName.replace(/ \(Practical\)|\(Tutorial\/Practical\)|\(Tutorial\)/, "").trim();
+  let found = list.find(s => s.name.toLowerCase() === subName.toLowerCase() || s.name.toLowerCase() === cleanName.toLowerCase());
+  if(!found){
+    found = {
+      id: "sub_" + Math.random().toString(36).substr(2, 9),
+      name: subName,
+      attended: 0,
+      total: 0
+    };
+    list.push(found);
+    store(0, "nx_attendance", attendance);
+  }
+  return found;
+}
+
+function calcTarget(a, t){
+  if(t === 0) return { pct: 0, needed: 0, canBunk: 0, state: "none" };
+  const pct = (a / t) * 100;
+  if(pct < 75){
+    const needed = Math.max(0, 3 * t - 4 * a);
+    return { pct, needed, canBunk: 0, state: "short" };
+  } else {
+    const canBunk = Math.floor((4 * a - 3 * t) / 3);
+    return { pct, needed: 0, canBunk, state: "safe" };
+  }
+}
+
+function renderDateNavigator(){
+  const dateBar = $("att-date-bar");
+  if(!dateBar) return;
+
+  if(attViewMode === "subject"){
+    dateBar.style.display = "none";
+    return;
+  }
+  dateBar.style.display = "flex";
+
+  const cur = attSelectedDate || new Date();
+  const today = new Date();
+  const isToday = cur.toDateString() === today.toDateString();
+
+  const dateText = cur.toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  }) + (isToday ? " (Today)" : "");
+
+  const labelEl = $("att-date-text");
+  if(labelEl) labelEl.textContent = dateText;
+
+  const inputEl = $("att-date-picker");
+  if(inputEl) inputEl.value = formatDateKey(cur);
+
+  const curZero = new Date(cur); curZero.setHours(0,0,0,0);
+  const hol = HOL.find(h => h.date.getTime() === curZero.getTime());
+  const holSpan = $("att-day-holiday-info");
+  if(holSpan){
+    holSpan.innerHTML = hol ? `<span class="att-holiday-tag">${hol.em} ${hol.name}</span>` : "";
+  }
+}
+
+function renderAttendance(){
+  renderDateNavigator();
+  const list = myAtt();
+  const summaryBox = $("att-summary");
+  const viewContainer = $("att-content-view");
+  const subTools = $("att-subject-tools");
+  if(!summaryBox || !viewContainer) return;
+
+  document.querySelectorAll(".att-mode-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.mode === attViewMode);
+  });
+
+  let totAtt = 0, totHeld = 0;
+  list.forEach(s => { totAtt += s.attended; totHeld += s.total; });
+  const overall = calcTarget(totAtt, totHeld);
+
+  let overallHtml = `
+    <div class="att-stat ${overall.state === 'safe' ? 'good' : overall.state === 'short' ? 'warn' : ''}">
+      <small>Overall Attendance</small>
+      <b>${totHeld ? overall.pct.toFixed(1) + '%' : '0.0%'}</b>
+    </div>
+    <div class="att-stat">
+      <small>Total Class Sessions</small>
+      <b>${totAtt} / ${totHeld} attended</b>
+    </div>
+  `;
+
+  if(totHeld === 0){
+    overallHtml += `
+      <div class="att-stat">
+        <small>75% Criteria Status</small>
+        <span style="color:var(--dim);font-size:.95rem">Mark classes to begin</span>
+      </div>
+    `;
+  } else if(overall.state === 'short'){
+    overallHtml += `
+      <div class="att-stat warn">
+        <small>Needed for 75% Overall</small>
+        <b>Attend next ${overall.needed} class${overall.needed > 1 ? 'es' : ''}</b>
+      </div>
+    `;
+  } else {
+    overallHtml += `
+      <div class="att-stat good">
+        <small>Safe to Miss (Overall)</small>
+        <b>Can miss ${overall.canBunk} class${overall.canBunk > 1 ? 'es' : ''}</b>
+      </div>
+    `;
+  }
+  summaryBox.innerHTML = overallHtml;
+
+  if(attViewMode === "day"){
+    if(subTools) subTools.hidden = true;
+    renderDayWiseView(viewContainer);
+  } else {
+    if(subTools) subTools.hidden = false;
+    renderSubjectWiseView(viewContainer, list);
+  }
+}
+
+function renderDayWiseView(container){
+  container.innerHTML = "";
+  const cur = attSelectedDate || new Date();
+  const dayNum = cur.getDay();
+  const dayName = DAYS[dayNum];
+  const dateKey = formatDateKey(cur);
+  const classesToday = dayList(dayNum);
+  const sm = mySessions();
+
+  const curZero = new Date(cur); curZero.setHours(0,0,0,0);
+  const hol = HOL.find(h => h.date.getTime() === curZero.getTime());
+
+  const headerDiv = document.createElement("div");
+  headerDiv.style.margin = "0.2rem 0 1rem";
+  headerDiv.innerHTML = `<h2 class="dayh" style="margin:0 0 .25rem">${dayName} Timetable Sessions (${classesToday.length})</h2>
+  <span style="font-size:.85rem;color:var(--dim)">Showing scheduled classes for <b>${dateKey}</b>. Mark Present or Absent below.</span>`;
+  container.appendChild(headerDiv);
+
+  if(hol){
+    container.innerHTML += `<div class="panel" style="text-align:center;padding:2.5rem 1rem;border-color:rgba(255,200,87,.3);margin-bottom:1rem">
+      <div style="font-size:2rem;margin-bottom:.5rem">${hol.em}</div>
+      <h3 style="margin:0 0 .3rem;color:var(--amber)">University Holiday: ${hol.name}</h3>
+      <span style="color:var(--dim);font-size:.9rem">${hol.type} · No academic lectures scheduled</span>
+    </div>`;
+  }
+
+  if(dayNum === 0){
+    container.innerHTML += `<div class="panel empty" style="text-align:center;padding:3rem 1rem">Sunday is a weekend! No academic lectures scheduled.</div>`;
+    return;
+  }
+
+  if(!classesToday.length && !hol){
+    container.innerHTML += `<div class="panel empty" style="text-align:center;padding:3rem 1rem">No classes scheduled on ${dayName}.</div>`;
+    return;
+  }
+
+  classesToday.forEach(cls => {
+    const sub = getSubjectRecord(cls.sub);
+    const sessionKey = `${dateKey}_${cls.s}_${cls.sub}`;
+    const mark = sm[sessionKey];
+
+    const card = document.createElement("div");
+    card.className = "att-card" + (mark === "P" ? " marked-p" : mark === "A" ? " marked-a" : "");
+
+    const stat = calcTarget(sub.attended, sub.total);
+    const pctStr = sub.total ? stat.pct.toFixed(1) + "%" : "0.0%";
+
+    let badgeClass = "neutral", badgeText = "No classes yet";
+    let barClass = "safe";
+    let adviceHtml = "";
+
+    if(sub.total > 0){
+      if(stat.state === "safe"){
+        badgeClass = "safe";
+        badgeText = pctStr;
+        barClass = "safe";
+        if(stat.canBunk > 0){
+          adviceHtml = `<span class="att-advice safe">✅ Safe: You can miss next <b>${stat.canBunk}</b> class${stat.canBunk > 1 ? 'es' : ''} without dropping below 75%.</span>`;
+        } else {
+          adviceHtml = `<span class="att-advice safe">🎯 Exactly at 75%: Attend the next class to maintain criteria!</span>`;
+        }
+      } else {
+        badgeClass = "short";
+        badgeText = pctStr;
+        barClass = "short";
+        adviceHtml = `<span class="att-advice short">⚠️ Need to attend next <b>${stat.needed}</b> class${stat.needed > 1 ? 'es' : ''} consecutively to reach 75%.</span>`;
+      }
+    } else {
+      adviceHtml = `<span class="att-advice neutral">No attendance recorded yet for this subject.</span>`;
+    }
+
+    const barWidth = sub.total ? Math.min(100, Math.round(stat.pct)) : 0;
+
+    let statusBadge = "";
+    if(mark === "P") statusBadge = `<span class="att-status-badge p">Present on ${dateKey}</span>`;
+    else if(mark === "A") statusBadge = `<span class="att-status-badge a">Absent on ${dateKey}</span>`;
+
+    card.innerHTML = `
+      <div class="att-info">
+        <div class="att-meta">
+          <span>${fmt(cls.s)} – ${fmt(cls.e)}</span> • <em>${cls.ven}</em> ${cls.prof ? ' • ' + cls.prof : ''} ${statusBadge}
+        </div>
+        <div class="att-name-row">
+          <span class="att-title">${cls.sub}</span>
+          <span class="att-badge ${badgeClass}">${badgeText}</span>
+        </div>
+        <div class="att-counts">
+          Subject Standing: <b>${sub.attended}</b> attended / <b>${sub.total}</b> held
+        </div>
+        <div class="att-bar-shell" title="75% marker indicated">
+          <div class="att-target-line" title="75% minimum threshold"></div>
+          <div class="att-bar-fill ${barClass}" style="width:${barWidth}%"></div>
+        </div>
+        ${adviceHtml}
+      </div>
+
+      <div class="att-actions">
+        <button class="btn-att btn-pres ${mark === 'P' ? 'active' : ''}" data-action="session-mark" data-target-mark="P" data-session="${sessionKey}" data-subid="${sub.id}" data-name="${cls.sub}">
+          ✓ Present
+        </button>
+        <button class="btn-att btn-abs ${mark === 'A' ? 'active' : ''}" data-action="session-mark" data-target-mark="A" data-session="${sessionKey}" data-subid="${sub.id}" data-name="${cls.sub}">
+          ✕ Absent
+        </button>
+        <button class="btn-sub-opt" data-action="edit" data-id="${sub.id}" title="Edit counts">✎</button>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+function renderSubjectWiseView(container, list){
+  container.innerHTML = "";
+  const headerDiv = document.createElement("div");
+  headerDiv.style.margin = "0.2rem 0 1rem";
+  headerDiv.innerHTML = `<h2 class="dayh" style="margin:0 0 .25rem">Subject Attendance Summary (${list.length} courses)</h2>
+  <span style="font-size:.85rem;color:var(--dim)">Track cumulative records across all calendar weeks. Edit past counts directly (✎ Edit) anytime.</span>`;
+  container.appendChild(headerDiv);
+
+  if(!list.length){
+    container.innerHTML += '<p class="empty">No subjects found. Add a subject using the form below.</p>';
+    return;
+  }
+
+  list.forEach(sub => {
+    const card = document.createElement("div");
+    card.className = "att-card";
+
+    const stat = calcTarget(sub.attended, sub.total);
+    const pctStr = sub.total ? stat.pct.toFixed(1) + "%" : "0.0%";
+
+    let badgeClass = "neutral", badgeText = "No classes yet";
+    let barClass = "safe";
+    let adviceHtml = "";
+
+    if(sub.total > 0){
+      if(stat.state === "safe"){
+        badgeClass = "safe";
+        badgeText = pctStr;
+        barClass = "safe";
+        if(stat.canBunk > 0){
+          adviceHtml = `<span class="att-advice safe">✅ Safe: You can miss next <b>${stat.canBunk}</b> class${stat.canBunk > 1 ? 'es' : ''} without dropping below 75%.</span>`;
+        } else {
+          adviceHtml = `<span class="att-advice safe">🎯 Exactly at 75%: Attend the next class to maintain criteria!</span>`;
+        }
+      } else {
+        badgeClass = "short";
+        badgeText = pctStr;
+        barClass = "short";
+        adviceHtml = `<span class="att-advice short">⚠️ Need to attend next <b>${stat.needed}</b> class${stat.needed > 1 ? 'es' : ''} consecutively to reach 75%.</span>`;
+      }
+    } else {
+      adviceHtml = `<span class="att-advice neutral">No attendance recorded yet. Tap Present or Absent to log.</span>`;
+    }
+
+    const barWidth = sub.total ? Math.min(100, Math.round(stat.pct)) : 0;
+
+    card.innerHTML = `
+      <div class="att-info">
+        <div class="att-name-row">
+          <span class="att-title">${sub.name}</span>
+          <span class="att-badge ${badgeClass}">${badgeText}</span>
+        </div>
+        <div class="att-counts">
+          Classes: <b>${sub.attended}</b> attended / <b>${sub.total}</b> total held
+        </div>
+        <div class="att-bar-shell" title="75% marker indicated">
+          <div class="att-target-line" title="75% minimum threshold"></div>
+          <div class="att-bar-fill ${barClass}" style="width:${barWidth}%"></div>
+        </div>
+        ${adviceHtml}
+      </div>
+
+      <div class="att-actions">
+        <button class="btn-att btn-pres" data-action="quick-add" data-type="P" data-id="${sub.id}" data-name="${sub.name}">
+          + Present
+        </button>
+        <button class="btn-att btn-abs" data-action="quick-add" data-type="A" data-id="${sub.id}" data-name="${sub.name}">
+          + Absent
+        </button>
+        <button class="btn-sub-opt" data-action="edit" data-id="${sub.id}" title="Manually update records">✎ Edit</button>
+        <button class="btn-sub-opt btn-sub-del" data-action="del" data-id="${sub.id}" title="Remove subject">✕</button>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+function handleSessionMark(sessionKey, targetMark, subId, subName){
+  const sm = mySessions();
+  const list = myAtt();
+  const sub = list.find(s => s.id === subId);
+  if(!sub) return;
+
+  const currentMark = sm[sessionKey];
+
+  if(currentMark === targetMark){
+    if(targetMark === "P"){
+      sub.attended = Math.max(0, sub.attended - 1);
+      sub.total = Math.max(0, sub.total - 1);
+    } else if(targetMark === "A"){
+      sub.total = Math.max(0, sub.total - 1);
+    }
+    delete sm[sessionKey];
+    toast(`${subName}: Unmarked`);
+  } else if(!currentMark){
+    if(targetMark === "P"){
+      sub.attended += 1;
+      sub.total += 1;
+      sm[sessionKey] = "P";
+      toast(`${subName}: Marked Present ✓`);
+    } else {
+      sub.total += 1;
+      sm[sessionKey] = "A";
+      toast(`${subName}: Marked Absent ✕`);
+    }
+  } else {
+    if(targetMark === "P"){
+      sub.attended += 1;
+      sm[sessionKey] = "P";
+      toast(`${subName}: Changed to Present ✓`);
+    } else {
+      sub.attended = Math.max(0, sub.attended - 1);
+      sm[sessionKey] = "A";
+      toast(`${subName}: Changed to Absent ✕`);
+    }
+  }
+
+  saveAttendance();
+}
+
+function handleAttAction(action, btn){
+  const list = myAtt();
+  const id = btn.dataset.id;
+  const sub = list.find(s => s.id === id);
+  if(!sub) return;
+  const displayName = btn.dataset.name || sub.name;
+
+  if(action === "quick-add"){
+    const type = btn.dataset.type;
+    if(type === "P"){
+      sub.attended += 1;
+      sub.total += 1;
+      toast(`${displayName}: +1 Present`);
+    } else {
+      sub.total += 1;
+      toast(`${displayName}: +1 Absent`);
+    }
+    saveAttendance();
+  } else if(action === "edit"){
+    const newA = prompt(`Enter attended classes for ${sub.name}:`, sub.attended);
+    if(newA === null) return;
+    const newT = prompt(`Enter total classes held for ${sub.name}:`, sub.total);
+    if(newT === null) return;
+    const numA = parseInt(newA, 10), numT = parseInt(newT, 10);
+    if(isNaN(numA) || isNaN(numT) || numA < 0 || numT < numA){
+      alert("Invalid: Total held classes must be greater than or equal to attended classes.");
+      return;
+    }
+    sub.attended = numA;
+    sub.total = numT;
+    saveAttendance();
+    toast(`Updated records for ${sub.name}`);
+  } else if(action === "del"){
+    if(confirm(`Remove ${sub.name} from attendance tracker?`)){
+      attendance[user.id] = list.filter(s => s.id !== id);
+      saveAttendance();
+      toast(`Removed ${sub.name}`);
+    }
+  }
+}
+
+// Global click event delegation
+document.addEventListener("click", e => {
+  const modeBtn = e.target.closest(".att-mode-btn");
+  if(modeBtn){
+    attViewMode = modeBtn.dataset.mode;
+    renderAttendance();
+    return;
+  }
+
+  if(e.target.closest("#att-prev-day")){
+    attSelectedDate.setDate(attSelectedDate.getDate() - 1);
+    renderAttendance();
+    return;
+  }
+  if(e.target.closest("#att-next-day")){
+    attSelectedDate.setDate(attSelectedDate.getDate() + 1);
+    renderAttendance();
+    return;
+  }
+  if(e.target.closest("#att-jump-today")){
+    attSelectedDate = new Date();
+    renderAttendance();
+    return;
+  }
+
+  const dateLabel = e.target.closest("#att-date-label");
+  if(dateLabel){
+    const inp = $("att-date-picker");
+    if(inp && typeof inp.showPicker === "function"){
+      try { inp.showPicker(); } catch(err){ inp.focus(); }
+    } else if(inp){
+      inp.focus();
+    }
+    return;
+  }
+
+  const sessionBtn = e.target.closest("[data-action='session-mark']");
+  if(sessionBtn){
+    const sKey = sessionBtn.dataset.session;
+    const targetMark = sessionBtn.dataset.targetMark;
+    const subId = sessionBtn.dataset.subid;
+    const subName = sessionBtn.dataset.name;
+    handleSessionMark(sKey, targetMark, subId, subName);
+    return;
+  }
+
+  const actBtn = e.target.closest("[data-action]");
+  if(actBtn){
+    const action = actBtn.dataset.action;
+    handleAttAction(action, actBtn);
+  }
+});
+
+document.addEventListener("change", e => {
+  if(e.target.id === "att-date-picker"){
+    const val = e.target.value;
+    if(val){
+      const [y, m, d] = val.split("-").map(Number);
+      attSelectedDate = new Date(y, m - 1, d);
+      renderAttendance();
+    }
+  }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const form = $("add-sub-form");
+  if(form){
+    form.onsubmit = e => {
+      e.preventDefault();
+      const inp = $("new-sub-name");
+      const name = inp.value.trim();
+      if(!name) return;
+      const list = myAtt();
+      if(list.some(s => s.name.toLowerCase() === name.toLowerCase())){
+        toast("Subject already exists");
+        return;
+      }
+      list.push({
+        id: "sub_" + Math.random().toString(36).substr(2, 9),
+        name: name,
+        attended: 0,
+        total: 0
+      });
+      saveAttendance();
+      inp.value = "";
+      toast(`Added ${name}`);
+    };
+  }
+});
+
+/* ---- Startup Call After All Declarations ---- */
+notes = store(1, "nx_notes") || {};
+
+// Check if URL has ?sec=1 or ?sec=2 to auto-login immediately!
+try {
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlSec = urlParams.get("sec");
+  if(urlSec){
+    user = { name: "Aditi Sharma", id: "24IT045", sec: urlSec };
+    store(0, "nx_user", user);
+    enter(true);
+  } else {
+    const saved = store(1, "nx_user");
+    if(saved && saved.name){
+      user = saved;
+      enter(true);
+    } else {
+      paintSky();
+    }
+  }
+} catch(e){
+  const saved = store(1, "nx_user");
+  if(saved && saved.name){ user = saved; enter(true); } else { paintSky(); }
+}
+
+setInterval(() => {
+  paintSky();
+  if(!$("app").hidden && view === "day"){
+    hero();
+    if(sel === "All" || sel === new Date().getDay()) timeline();
+  }
+}, 1000);
+</script>
+</body>
+</html>
